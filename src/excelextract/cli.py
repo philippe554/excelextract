@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+from .extract import extract
+
 def main():
     parser = argparse.ArgumentParser(
         prog="excelextract",
@@ -47,9 +49,10 @@ def main():
         print("Error: No exports defined in the configuration.", file=sys.stderr)
         sys.exit(1)
 
-    # TODO: Implement the actual extraction logic
     for exportConfig in exports:
-        print(f"[placeholder] Would process export: {exportConfig.get('output', 'output.csv')}")
+        extract(exportConfig)
+
+    print("Processing completed.")
 
 if __name__ == "__main__":
     main()

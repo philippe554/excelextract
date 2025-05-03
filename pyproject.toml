@@ -13,6 +13,21 @@ dependencies = [
   "openpyxl>=3.0"
 ]
 
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Topic :: Utilities",
+  "Environment :: Console"
+]
+
 [project.urls]
 "Homepage" = "https://github.com/philippe554/excelextract"
 "Source" = "https://github.com/philippe554/excelextract"

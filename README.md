@@ -33,14 +33,14 @@ Given a JSON configuration like:
       "inputFolder": "data",
       "inputRegex": ".*",
       "output": "outputFileName",
-      "loops" : [
+      "loopups" : [
         {
-          "type" : "sheetLoop",
+          "type" : "loopsheets",
           "token" : "SHEET_NAME",
           "regex" : "Survey (.*)"
         },
         {
-          "type": "dynamicRowLoop",
+          "type": "looprowsbysearch",
           "token": "ROW",
           "sheet": "%%SHEET_NAME%%",
           "start": 
@@ -62,13 +62,13 @@ Given a JSON configuration like:
           "name": "survey_file",
           "type": "string",
           "value": "%%FILE_NAME%%",
-          "doNotInitiate": true
+          "trigger": "never"
         },
         {
           "name": "survey_name",
           "type": "string",
           "value": "overview!C2",
-          "doNotInitiate": true
+          "trigger": "never"
         },
         {
           "name": "participant",
@@ -104,17 +104,7 @@ The configuration extracts these participant rows dynamically and compiles them 
 
 It demonstrates:
 
-- **File matching**: Processes all `.xlsx` files in the `data/` folder using a regex.
-- **Sheet loop**: Iterates over all sheets matching `"Survey (.*)"`, storing the sheet name as `%%SHEET_NAME%%`.
-- **Dynamic row loop**:
-  - Starts 3 rows after `"Participants"` in column `C`
-  - Ends 1 row before `"Total"` in column `O`
-  - Sets the `%%ROW%%` token for use in cell references
-- **Token-based cell addressing**: Extracts values like participant name or count using dynamic tokens.
-- **Fixed metadata**: Reads values like survey name from static cells (e.g., `overview!C2`) once per file.
-- **Selective row inclusion**:
-  - `doNotInitiate: true` excludes metadata fields from triggering output
-  - `type: "number"` ensures proper numeric conversion and filtering
+TODO: rewrite after all API changes have taken place
 
 This setup allows you to turn a folder of semi-structured Excel forms into a single clean dataset with no manual editing.
 
