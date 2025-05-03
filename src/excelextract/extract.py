@@ -31,6 +31,8 @@ def extract(exportConfig):
     for filename in files:
         if filename.startswith("~$"):
             continue
+        if not filename.endswith(".xlsx"):
+            continue
 
         filepath = os.path.join(inputFolder, filename)
         print(f"  Info: Processing file: {filepath}")
@@ -115,7 +117,7 @@ def extract(exportConfig):
 
                 rowData[colName] = cellVal
 
-                if trigger == "default" and trigger == "nonempty":
+                if trigger == "default" or trigger == "nonempty":
                     if cellVal not in [None, ""]:
                         triggerHit = True
 

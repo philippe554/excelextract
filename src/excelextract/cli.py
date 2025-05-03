@@ -46,8 +46,7 @@ def main():
 
     exports = config.get("exports", [])
     if not exports:
-        print("Error: No exports defined in the configuration.", file=sys.stderr)
-        sys.exit(1)
+        print("Warning: No exports defined in the configuration.")
 
     for exportConfig in exports:
         extract(exportConfig)
