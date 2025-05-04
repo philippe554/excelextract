@@ -29,7 +29,7 @@ def generateTestData(path):
                     }
                 ],
                 "columns": [
-                    {"name": "FILE_NAME", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
+                    {"name": "File", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
                     {"name": "Name", "type": "string", "value": "sheet1!A%%ROW%%"},
                     {"name": "Age", "type": "number", "value": "sheet1!B%%ROW%%"},
                     {"name": "City", "type": "string", "value": "sheet1!C%%ROW%%"},

@@ -22,11 +22,11 @@ def main():
         ),
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument(
-        "config",
-        type=Path,
-        help="Path to the JSON configuration file."
-    )
+    parser.add_argument("config", type=Path, help="Path to the JSON configuration file.")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+    parser.add_argument("-i", "--input", type=Path, help="Input folder containing Excel files, overrides config.")
+    parser.add_argument("-o", "--output", type=Path, help="Output folder for CSV files, overrides config.")
+    parser.add_argument("-r", "--regex", type=str, help="Regex to filter input files, overrides config.")
 
     args = parser.parse_args()
 
@@ -49,6 +49,17 @@ def main():
         print("Warning: No exports defined in the configuration.")
 
     for exportConfig in exports:
+        if args.input:
+            exportConfig["inputFolder"] = str(args.input)
+        if args.output:
+            exportConfig["outputFolder"] = str(args.output)
+        if "output" not in exportConfig:
+            exportConfig["output"] = "output.csv"
+        if args.regex:
+            exportConfig["inputRegex"] = args.regex
+        if "inputRegex" not in exportConfig:
+            exportConfig["inputRegex"] = ".*"
+
         extract(exportConfig)
 
     print("Processing completed.")

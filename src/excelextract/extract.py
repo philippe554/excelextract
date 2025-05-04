@@ -13,12 +13,22 @@ from .lookup import resolveLookups
 def extract(exportConfig):
     inputFolder = exportConfig.get("inputFolder", ".")
     inputRegex = exportConfig.get("inputRegex", ".*")
+    outputFolder = exportConfig.get("outputFolder", ".")
+
+    if not os.path.exists(inputFolder):
+        print(f"  Error: Input folder '{inputFolder}' does not exist.")
+        return
+    if not os.path.exists(outputFolder):
+        print(f"  Info: Output folder '{outputFolder}' does not exist. Creating it.")
+        os.makedirs(outputFolder)
+
     outputName = exportConfig.get("output", "output")
-
-    print(f"Processing export: {outputName} ...")
-
     if not outputName.endswith(".csv"):
         outputName += ".csv"
+
+    outputPath = os.path.join(outputFolder, outputName)
+
+    print(f"Processing export: {outputName} ...")
 
     # Find Excel files matching the input regex in the given folder.
     files = [f for f in os.listdir(inputFolder) if re.search(inputRegex, f)]
@@ -127,8 +137,8 @@ def extract(exportConfig):
 
     # Write all extracted rows to CSV.
     if allRows:
-        print(f"  Info: Writing output to {outputName} ...")
-        with open(outputName, "w", newline="", encoding="utf-8-sig") as csvfile:
+        print(f"  Info: Writing output to {outputPath} ...")
+        with open(outputPath, "w", newline="", encoding="utf-8-sig") as csvfile:
             fieldNames = [col["name"] for col in exportConfig.get("columns", [])]
             writer = csv.DictWriter(csvfile, fieldnames = fieldNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             writer.writeheader()

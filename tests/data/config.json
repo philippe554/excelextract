@@ -1,0 +1,77 @@
+{
+    "exports": [
+        {
+            "output": "employees.csv",
+            "lookups": [
+                {
+                    "type": "loopSheets",
+                    "token" : "COMPANY_SHEET",
+                    "regex" : "company.*"
+                },
+                {
+                    "type": "looprowsfixed",
+                    "start": 2,
+                    "end": 10,
+                    "token": "ROW"
+                }
+            ],
+           "columns": [
+                {"name": "File", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
+                {"name": "Date", "type": "string", "value": "overview!B1", "trigger": "never"},
+                {"name": "Version", "type": "string", "value": "overview!B2", "trigger": "never"},
+                {"name": "Name", "type": "string", "value": "%%COMPANY_SHEET%%!A%%ROW%%"},
+                {"name": "Role", "type": "string", "value": "%%COMPANY_SHEET%%!B%%ROW%%"},
+                {"name": "Salary", "type": "number", "value": "%%COMPANY_SHEET%%!C%%ROW%%"},
+                {"name": "Years", "type": "number", "value": "%%COMPANY_SHEET%%!D%%ROW%%"},
+                {"name": "Currency", "type": "string", "value": "%%COMPANY_SHEET%%!E%%ROW%%", "trigger": "never"},
+                {"name": "Hours", "type": "number", "value": "%%COMPANY_SHEET%%!F%%ROW%%", "trigger": "nonzero"}
+            ]
+        },
+        {
+            "output": "inventory.csv",
+            "lookups": [
+                {
+                    "type": "loopSheets",
+                    "token" : "COMPANY_SHEET",
+                    "regex" : "company.*"
+                },
+                {
+                    "type": "looprowsbysearch",
+                    "token": "ROW",
+                    "sheet": "%%COMPANY_SHEET%%",
+                    "stride": 2,
+                    "start": {
+                        "regex": "Inventory",
+                        "column": "A",
+                        "offset": 1
+                    },
+                    "end": {
+                        "count": 10
+                    }
+                },
+                {
+                    "type": "loopcolsfixed",
+                    "start": "C",
+                    "end": "F",
+                    "token": "COL"
+                },
+                {
+                    "type": "findrow",
+                    "regex": "Inventory",
+                    "sheet": "%%COMPANY_SHEET%%",
+                    "column": "A",
+                    "offset": 0,
+                    "token": "HEADER_ROW"
+                }
+            ],
+            "columns": [
+                {"name": "File", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
+                {"name": "Company", "type": "string", "value": "%%COMPANY_SHEET%%", "trigger": "never"},
+                {"name": "Product", "type": "string", "value": "%%COMPANY_SHEET%%!A%%ROW%%"},
+                {"name": "Quarter", "type": "string", "value": "%%COMPANY_SHEET%%!%%COL%%%%HEADER_ROW%%", "trigger": "never"},
+                {"name": "Bought", "type": "number", "value": "%%COMPANY_SHEET%%!%%COL%%%%ROW%%"},
+                {"name": "Sold", "type": "number", "value": "%%COMPANY_SHEET%%!%%COL%%%%ROW%%", "rowOffset": 1}
+            ]
+        }
+    ]
+}
