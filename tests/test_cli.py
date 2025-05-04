@@ -22,7 +22,7 @@ def generateTestData(path):
                 "output": str(path / "output.csv"),
                 "lookups": [
                     {
-                        "type": "looprowsfixed",
+                        "type": "looprows",
                         "start": 2,
                         "end": 10,
                         "token": "ROW",

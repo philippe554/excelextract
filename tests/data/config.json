@@ -9,13 +9,13 @@
                     "regex" : "company.*"
                 },
                 {
-                    "type": "looprowsfixed",
+                    "type": "looprows",
                     "start": 2,
                     "end": 10,
                     "token": "ROW"
                 }
             ],
-           "columns": [
+            "columns": [
                 {"name": "File", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
                 {"name": "Date", "type": "string", "value": "overview!B1", "trigger": "never"},
                 {"name": "Version", "type": "string", "value": "overview!B2", "trigger": "never"},
@@ -36,32 +36,27 @@
                     "regex" : "company.*"
                 },
                 {
-                    "type": "looprowsbysearch",
-                    "token": "ROW",
-                    "sheet": "%%COMPANY_SHEET%%",
-                    "stride": 2,
-                    "start": {
-                        "regex": "Inventory",
-                        "column": "A",
-                        "offset": 1
-                    },
-                    "end": {
-                        "count": 10
-                    }
-                },
-                {
-                    "type": "loopcolsfixed",
-                    "start": "C",
-                    "end": "F",
-                    "token": "COL"
-                },
-                {
-                    "type": "findrow",
+                    "type": "findRow",
                     "regex": "Inventory",
                     "sheet": "%%COMPANY_SHEET%%",
                     "column": "A",
                     "offset": 0,
                     "token": "HEADER_ROW"
+                },
+                {
+                    "type": "looprows",
+                    "token": "ROW",
+                    "sheet": "%%COMPANY_SHEET%%",
+                    "stride": 2,
+                    "start": "%%HEADER_ROW%%",
+                    "startOffset": 1,
+                    "count": 8
+                },
+                {
+                    "type": "loopcolumns",
+                    "start": "C",
+                    "end": "F",
+                    "token": "COL"
                 }
             ],
             "columns": [
