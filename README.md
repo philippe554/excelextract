@@ -257,6 +257,7 @@ Finds the row number(s) or column letter(s) containing specific text. Useful for
 | `column`    | String            | **For `findRow` only:** Optional. Restrict the search to this specific column (e.g., `"A"`).                                                                                                                  |
 | `row`       | Number            | **For `findColumn` only:** Optional. Restrict the search to this specific row number (e.g., `1`).                                                                                                               |
 | `select`    | String/Num/List | Optional (default: `"first"`). Controls which match(es) to use if multiple cells match the criteria. \<br/\> - `"first"`: Use the first match found. \<br/\> - `"last"`: Use the last match found. \<br/\> - *Future:* Integer or List support. |
+| `unique` | Bool | Optional (default: `false`). Regardless which match is selected (e.g., `"first"`), if this is set and more than 1 match is found, the export exists with an error |
 
 **Lookup Operation: `findcell`**
 
@@ -269,6 +270,7 @@ Searches an entire sheet for a cell containing specific text and defines tokens 
 | `sheet`     | String | Name of the sheet to search within. Can use tokens (e.g., `"%%DATA_SHEET%%"`).                                                                                                                                                                                           |
 | `rowtoken`  | String | Name of the token that will hold the row number of the found cell (e.g., `"HEADER_ROW"`).                                                                                                                                                                                          |
 | `columntoken` | String | Name of the token that will hold the column letter of the found cell (e.g., `"DATA_COLUMN"`).                                                                                                                                                                                      |
+| `unique` | Bool | Optional (default: `false`). If this is set and more than 1 match is found, the export exists with an error |
 
 This operation is the exception on the rule, which does not have the `token` field, but generates 2 tokens: `rowtoken` and `columntoken`.
 

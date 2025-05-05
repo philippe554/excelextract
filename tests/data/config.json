@@ -74,7 +74,8 @@
                     "match": "FindCellTest",
                     "sheet": "overview",
                     "rowtoken": "ROW",
-                    "columntoken": "COLUMN"
+                    "columntoken": "COLUMN",
+                    "unique": true
                 }
             ],
             "columns": [

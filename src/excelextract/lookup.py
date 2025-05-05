@@ -66,6 +66,10 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             if len(indices) == 0:
                 raise ValueError(f"No matches found for '{match}' in sheet '{sheet}' and search slice '{searchSlice}'")
 
+            if "unique" in loopDefinition and loopDefinition["unique"]:
+                if len(indices) > 1:
+                    raise ValueError(f"Multiple matches found for '{match}' in sheet '{sheet}' and search slice '{searchSlice}'")
+
             if "select" not in loopDefinition or loopDefinition["select"] == "first":
                 indices = [indices[0]]
             elif loopDefinition["select"] == "last":
@@ -112,6 +116,10 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                             rowToken: row,
                             colToken: col
                         })
+
+            if "unique" in loopDefinition and loopDefinition["unique"]:
+                if len(loopElements) > 1:
+                    raise ValueError(f"Multiple matches found for '{match}' in sheet '{sheet}'")
 
         elif operation == "looprows" or operation == "loopcolumns":
             if "start" not in loopDefinition:
