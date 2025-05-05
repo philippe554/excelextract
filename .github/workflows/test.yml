@@ -9,6 +9,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      # Keep running other jobs even if one fails
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+        openpyxl-version: ['openpyxl==3.0.0', 'openpyxl'] # without version is latest
+        formulas-version: ['formulas==1.2.3', 'formulas']
 
     steps:
       - name: Checkout code
@@ -17,13 +24,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest openpyxl formulas
+          pip install pytest ${{ matrix.openpyxl-version }} ${{ matrix.formulas-version }}
           pip install -e .
+
+      - name: Display installed versions
+        # Useful for debugging which versions actually got installed
+        run: pip freeze
 
       - name: Run tests
         run: pytest
