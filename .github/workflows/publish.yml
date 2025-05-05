@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine openpyxl
+          pip install build twine openpyxl formulas
 
       - name: Build package
         run: python -m build

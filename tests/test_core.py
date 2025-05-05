@@ -21,3 +21,8 @@ def test_1(tmp_path):
     print("Find Cell CSV:\n" + output)
     assert output.splitlines()[1] == "\"12\",\"F\""
 
+    with open(tmp_path / "formulas.csv", "r") as f:
+        output = f.read()
+    print("Formulas CSV:\n" + output)
+    assert output.splitlines()[1] == "33.0,1.5,\"Hello World\",\"45200\",\"True\",\"Yes\""
+

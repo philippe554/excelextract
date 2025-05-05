@@ -82,6 +82,17 @@
                 {"name": "row", "type": "string", "value": "%%ROW%%"},
                 {"name": "column", "type": "string", "value": "%%COLUMN%%"}
             ]
+        },
+        {
+            "output": "formulas.csv",
+            "columns": [
+                {"name": "sum", "type": "number", "value": "=SUM('company 1'!C16:C19) + 5"},
+                {"name": "constant", "type": "number", "value": "=3/2"},
+                {"name": "string", "type": "string", "value": "=CONCATENATE(\"Hello\", \" \", \"World\")"},
+                {"name": "date", "type": "string", "value": "=DATE(2023, 10, 1)"},
+                {"name": "boolean", "type": "boolean", "value": "=TRUE()"},
+                {"name": "if", "type": "string", "value": "=IF('company 1'!C16 > 0, \"Yes\", \"No\")"}
+            ]
         }
     ]
 }

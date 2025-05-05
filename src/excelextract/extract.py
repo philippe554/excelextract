@@ -4,6 +4,7 @@ from openpyxl.utils.cell import coordinate_from_string
 
 from .tokens import applyTokenReplacement
 from .lookup import resolveLookups
+from .formulas import evaluate
 
 def extract(exportConfig, wb, filename):
     allRows = []
@@ -39,29 +40,33 @@ def extract(exportConfig, wb, filename):
 
             replacedValue = applyTokenReplacement(valueTemplate, tokens)
 
-            # If the replaced value contains "!", treat it as a cell reference in the format "SheetName!CellRef".
-            if "!" in replacedValue:
-                parts = replacedValue.split("!", 1)
-                refSheetName = parts[0]
-                cellRef = parts[1]
-
-                if "rowoffset" in col and col["rowoffset"] != 0:
-                    cellCoord = list(coordinate_from_string(cellRef))
-                    cellCoord[1] += col["rowoffset"]
-                    cellRef = cellCoord[0] + str(cellCoord[1])
-                if "coloffset" in col and col["coloffset"] != 0:
-                    cellCoord = list(coordinate_from_string(cellRef))
-                    cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + col["coloffset"])
-                    cellRef = cellCoord[0] + str(cellCoord[1])
-
-                try:
-                    sheet = wb[refSheetName]
-                    cellVal = sheet[cellRef].value
-                except Exception as e:
-                    print(f"  Error: Error reading cell {cellRef} from sheet {refSheetName} in file {filename}: {e}")
-                    cellVal = None
+            if replacedValue.strip().startswith("="):
+                cellVal = evaluate(wb, replacedValue)
+                
             else:
-                cellVal = replacedValue
+                # If the replaced value contains "!", treat it as a cell reference in the format "SheetName!CellRef".
+                if "!" in replacedValue:
+                    parts = replacedValue.split("!", 1)
+                    refSheetName = parts[0]
+                    cellRef = parts[1]
+
+                    if "rowoffset" in col and col["rowoffset"] != 0:
+                        cellCoord = list(coordinate_from_string(cellRef))
+                        cellCoord[1] += col["rowoffset"]
+                        cellRef = cellCoord[0] + str(cellCoord[1])
+                    if "coloffset" in col and col["coloffset"] != 0:
+                        cellCoord = list(coordinate_from_string(cellRef))
+                        cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + col["coloffset"])
+                        cellRef = cellCoord[0] + str(cellCoord[1])
+
+                    try:
+                        sheet = wb[refSheetName]
+                        cellVal = sheet[cellRef].value
+                    except Exception as e:
+                        print(f"  Error: Error reading cell {cellRef} from sheet {refSheetName} in file {filename}: {e}")
+                        cellVal = None
+                else:
+                    cellVal = replacedValue
 
             # Convert the cell value according to the specified type.
             if colType == "number":
