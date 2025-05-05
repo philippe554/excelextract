@@ -15,7 +15,7 @@ jobs:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         openpyxl-version: ['openpyxl==3.0.6', 'openpyxl'] # without version is latest
-        formulas-version: ['formulas==1.2.3', 'formulas']
+        formulas-version: ['formulas==1.2.7', 'formulas']
 
     steps:
       - name: Checkout code

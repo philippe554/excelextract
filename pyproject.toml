@@ -11,7 +11,7 @@ requires-python = ">=3.9"
 
 dependencies = [
   "openpyxl>=3.0.6",
-  "formulas>=1.2.3"
+  "formulas>=1.2.7"
 ]
 
 classifiers = [
