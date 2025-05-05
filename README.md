@@ -20,7 +20,7 @@ You can install excelextract using `pip`, Python's package installer. Open your 
 pip install excelextract
 ```
 
-**Note:** You need Python 3.8 or higher installed on your system to use this tool. This documentation assumes you have Python and `pip` available.
+**Note:** You need Python 3.9 or higher installed on your system to use this tool. This documentation assumes you have Python and `pip` available.
 
 ## How It Works: The Configuration File
 
@@ -297,16 +297,26 @@ Defines the structure of your output CSV file. Each object in the `columns` list
 |-------------|---------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `name`      | String  | Yes      | The header name for this column in the output CSV file.                                                                                                                                                 |
 | `type`      | String  | Yes      | Data type for the output column. Use `"string"` for text, `"number"` for numeric values (integers or decimals). Affects how data is read and potentially formatted.                                        |
-| `value`     | String  | Yes      | How to get the value for this column. Can be: <br> - A **literal string**: `value: "Constant Value"` <br> - A **cell reference**: `value: "SheetName!A1"` or using tokens: `value: "%%SHEET%%!B%%ROW%%"` <br> - A **token**: `value: "%%FILE_NAME%%"` |
+| `value`     | String  | Yes      | How to get the value for this column. Can be: <br> - A **literal string**: `value: "Constant Value"` <br> - A **cell reference**: `value: "SheetName!A1"` or using tokens: `value: "%%SHEET%%!B%%ROW%%"` <br> - An **Excel style formula** (e.g., `=sum(sheet!B2:B20)`)|
 | `trigger`   | String  | No       | Controls if this column can trigger the creation of a new row in the CSV. Options: `"nonempty"` (default), `"never"`, `"nonzero"`. See Trigger System below.                                           |
 | `rowOffset` | Number  | No       | Optional (default 0). Adds an offset to the row number part of a cell reference in `value`. Useful for getting data from adjacent rows (e.g., `value: "Data!A%%ROW%%", rowOffset: 1` gets data from row below). |
 | `colOffset` | Number  | No       | Optional (default 0). Adds an offset to the column part of a cell reference in `value`. Useful for getting data from adjacent columns.                                                                  |
 
 **Important `value` Syntax:**
 
-  * If `value` contains an exclamation mark (`!`), it's treated as a **cell reference** (`SheetName!CellAddress`). Tokens like `%%ROW%%` or `%%SHEET%%` will be substituted before reading the cell.
-  * If `value` *only* contains a **token** (e.g., `%%FILE_NAME%%`), the token's value is used directly.
-  * Otherwise, `value` is treated as a **literal string** that will be put directly into the CSV cell.
+  * If `value` starts with a equals sign (`=`), it's parsed as an **Excel style formula**. The Python [Formulas](https://pypi.org/project/formulas/) Package is used to parse and calculate these values.
+  * If not a formula, and `value` contains an exclamation mark (`!`), it's treated as a **cell reference** (`SheetName!CellAddress`). Tokens like `%%ROW%%` or `%%SHEET%%` will be substituted before reading the cell.
+  * Otherwise, `value` is treated as a **literal string** that will be put directly into the CSV cell, this can include a token.
+
+**Examples:**
+
+Assuming a ROW (e.g., "10"), COLUMN (e.g., "B"), and SHEET (e.g., "overview") token are used to generate a row in the csv file, then these columns will be evaluated as:
+
+```json
+"value": "Row = %%ROW%% and column = %%COLUMN%%" --> Literal string: "row = 10 and column = B"
+"value": "=sum(%%SHEET%%!%%COLUMN%%2:%%COLUMN%%20)" --> Evaluate formula: "=sum(overview!B2:B20)"
+"value": "overview!C%%ROW%%" --> Extract value from "C20" in sheet "overview"
+```
 
 ### Trigger System (`trigger`)
 
@@ -345,6 +355,7 @@ Other tokens (like `%%ROW%%`, `%%SURVEY_SHEET%%`, `%%HEADER_ROW%%`) are defined 
   * Supports various lookup **operations** (`loopsheets`, `looprows`, `loopcolumns`, `findrow`, `findcolumn`) to locate data dynamically.
   * Can find specific rows/columns based on cell content using `match` (for exact or alternative strings) without requiring regex, while `loopsheets` still uses regex for sheet name patterns. Uses `select` to choose which match(es) to use.
   * Flexible **Trigger System** (defaulting to `nonempty`) to precisely control when data rows are created based on whether key cells contain data or meet specific conditions (`nonzero`).
+  * Use Excel style functions (e.g., `=sum(sheet!B2:B20)`) to extract aggregated data.
   * Combines data from multiple sheets and multiple Excel files into single CSV outputs.
   * Outputs standard CSV files (UTF-8 encoded) compatible with most data analysis tools and spreadsheets.
 
