@@ -138,10 +138,10 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 raise ValueError("Must specify either 'end' or 'count' in loop definition")
 
             stride = loopDefinition.get("stride", 1)
-            startOffset = loopDefinition.get("startOffset", 0)
+            startOffset = loopDefinition.get("startoffset", 0)
             if startOffset != 0:
                 start += startOffset
-            endOffset = loopDefinition.get("endOffset", 0)
+            endOffset = loopDefinition.get("endoffset", 0)
             if endOffset != 0:
                 end += endOffset
 

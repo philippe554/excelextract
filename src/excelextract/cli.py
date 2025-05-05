@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from .utils import cleanConfig
 from .io import loopFiles
 
 def main():
@@ -39,6 +40,8 @@ def main():
             raise ValueError(f"Config file {args.config} is not a valid JSON file: {e}")
         except Exception as e:
             raise RuntimeError(f"Error reading config file {args.config}: {e}")
+        
+        config = cleanConfig(config)
 
         if "exports" not in config:
             raise ValueError("Config file does not contain 'exports' key.")

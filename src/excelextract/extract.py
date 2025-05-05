@@ -45,13 +45,13 @@ def extract(exportConfig, wb, filename):
                 refSheetName = parts[0]
                 cellRef = parts[1]
 
-                if "rowOffset" in col and col["rowOffset"] != 0:
+                if "rowoffset" in col and col["rowoffset"] != 0:
                     cellCoord = list(coordinate_from_string(cellRef))
-                    cellCoord[1] += col["rowOffset"]
+                    cellCoord[1] += col["rowoffset"]
                     cellRef = cellCoord[0] + str(cellCoord[1])
-                if "colOffset" in col and col["colOffset"] != 0:
+                if "coloffset" in col and col["coloffset"] != 0:
                     cellCoord = list(coordinate_from_string(cellRef))
-                    cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + col["colOffset"])
+                    cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + col["coloffset"])
                     cellRef = cellCoord[0] + str(cellCoord[1])
 
                 try:

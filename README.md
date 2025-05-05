@@ -210,6 +210,8 @@ Each configuration file must have a top-level `exports` key, which contains a li
 }
 ```
 
+Note: all keys/fields are case insensitive.
+
 ### Top-Level Fields per Export Job
 
 | Field    | Type             | Required | Description                                                                                                                                                              |
