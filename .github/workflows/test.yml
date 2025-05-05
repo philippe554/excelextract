@@ -13,8 +13,8 @@ jobs:
       # Keep running other jobs even if one fails
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-        openpyxl-version: ['openpyxl==3.0.0', 'openpyxl'] # without version is latest
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        openpyxl-version: ['openpyxl==3.0.6', 'openpyxl'] # without version is latest
         formulas-version: ['formulas==1.2.3', 'formulas']
 
     steps:
