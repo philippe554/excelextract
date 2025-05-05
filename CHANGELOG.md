@@ -1,8 +1,14 @@
 # Changelog
 
-All notable changes to `excelextract` will be documented in this file.  
+All notable changes to ExcelExtract will be documented in this file.  
 
 ## [Unreleased]
+
+## [0.4.0] - 2025-05-05
+
+- Add Excel style formulas using the Formulas package
+- Add test matrix using GitHub Actions over multiple Python versions
+- Properly select minimum version of dependencies
 
 ## [0.3.0] - 2025-05-05
 

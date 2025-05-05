@@ -1,6 +1,6 @@
 [project]
 name = "excelextract"
-version = "0.3.0"
+version = "0.4.0"
 description = "A simple and flexible Excel-to-CSV extraction tool using JSON configuration."
 readme = "README.md"
 license = "MIT"
