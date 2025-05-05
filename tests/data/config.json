@@ -65,6 +65,22 @@
                 {"name": "Bought", "type": "number", "value": "%%COMPANY_SHEET%%!%%COL%%%%ROW%%"},
                 {"name": "Sold", "type": "number", "value": "%%COMPANY_SHEET%%!%%COL%%%%ROW%%", "rowOffset": 1}
             ]
+        },
+        {
+            "output": "findcell.csv",
+            "lookups": [
+                {
+                    "operation": "findcell",
+                    "match": "FindCellTest",
+                    "sheet": "overview",
+                    "rowtoken": "ROW",
+                    "columntoken": "COLUMN"
+                }
+            ],
+            "columns": [
+                {"name": "row", "type": "string", "value": "%%ROW%%"},
+                {"name": "column", "type": "string", "value": "%%COLUMN%%"}
+            ]
         }
     ]
 }

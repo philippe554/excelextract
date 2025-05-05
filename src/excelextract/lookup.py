@@ -18,12 +18,17 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             raise ValueError(f"Missing 'operation' in loop definition: {loopDefinition}")
 
         operation = loopDefinition["operation"].lower()
-        if operation not in ["loopsheets", "findrow", "findcolumn", "looprows", "loopcolumns"]:
+        if operation not in ["loopsheets", "findrow", "findcolumn", "findcell", "looprows", "loopcolumns"]:
             raise ValueError(f"Invalid loop operation '{operation}' in definition: {loopDefinition}")
         
-        if "token" not in loopDefinition:
-            raise ValueError(f"Missing 'token' in loop definition: {loopDefinition}")
-        token = loopDefinition["token"]
+        if operation == "findcell":
+            if "token" in loopDefinition:
+                raise ValueError(f"Cannot specify 'token' for 'findcell', use 'rowtoken' and 'columntoken' instead: {loopDefinition}")
+            if "rowtoken" not in loopDefinition or "columntoken" not in loopDefinition:
+                raise ValueError(f"Must specify 'rowtoken' and 'columntoken' for 'findcell': {loopDefinition}")
+        else:
+            if "token" not in loopDefinition:
+                raise ValueError(f"Missing 'token' in loop definition: {loopDefinition}")
         
         loopElements = []
         
@@ -61,16 +66,16 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             if len(indices) == 0:
                 raise ValueError(f"No matches found for '{match}' in sheet '{sheet}' and search slice '{searchSlice}'")
 
-            if "mode" not in loopDefinition or loopDefinition["mode"] == "first":
+            if "select" not in loopDefinition or loopDefinition["select"] == "first":
                 indices = [indices[0]]
-            elif loopDefinition["mode"] == "last":
+            elif loopDefinition["select"] == "last":
                 indices = [indices[-1]]
-            elif loopDefinition["mode"] == "all":
+            elif loopDefinition["select"] == "all":
                 pass
-            elif type(loopDefinition["mode"]) == int:
-                indices = [indices[loopDefinition["mode"]]]
+            elif type(loopDefinition["select"]) == int:
+                indices = [indices[loopDefinition["select"]]]
             else:
-                raise ValueError(f"Invalid mode '{loopDefinition['mode']}' in definition: {loopDefinition}")
+                raise ValueError(f"Invalid select '{loopDefinition['select']}' in definition: {loopDefinition}")
 
             offset = loopDefinition.get("offset", 0)
             indices = [i + offset + 1 for i in indices] # +1 to convert to 1-based index
@@ -79,6 +84,34 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 loopElements = indices
             else:
                 loopElements = [get_column_letter(i) for i in indices]
+
+        elif operation == "findcell":
+            if "match" not in loopDefinition:
+                raise ValueError(f"Missing 'match' in loop definition: {loopDefinition}")
+            if "sheet" not in loopDefinition:
+                raise ValueError(f"Missing 'sheet' in loop definition: {loopDefinition}")
+            if "select" in loopDefinition:
+                raise ValueError(f"Cannot specify 'select' for 'findcell' due to ambiguity: {loopDefinition}")
+            
+            match = loopDefinition["match"]
+            sheet = applyTokenReplacement(loopDefinition["sheet"], currentElement)
+
+            if type(match) == str:
+                match = [match]
+
+            rowToken = loopDefinition["rowtoken"]
+            colToken = loopDefinition["columntoken"]            
+
+            for col in wb[sheet].iter_cols():
+                for cell in col:
+                    if cell.value in match:
+                        row = cell.row
+                        col = get_column_letter(cell.column)
+
+                        loopElements.append({
+                            rowToken: row,
+                            colToken: col
+                        })
 
         elif operation == "looprows" or operation == "loopcolumns":
             if "start" not in loopDefinition:
@@ -123,8 +156,21 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
 
         if len(loopDefinition) == 0:
             raise ValueError("Loop definition is empty")
-
+        
         for i in range(len(loopElements)):
             copy = currentElement.copy()
-            copy[token] = loopElements[i]
+
+            if operation == "findcell":
+                for key, value in loopElements[i].items():
+                    if key not in copy:
+                        copy[key] = value
+                    else:
+                        raise ValueError(f"Duplicate key '{key}' in loop definition: {loopDefinition}")
+            else:
+                token = loopDefinition["token"]
+                if token not in copy:
+                    copy[token] = loopElements[i]
+                else:
+                    raise ValueError(f"Duplicate token '{token}' in loop definition: {loopDefinition}")
+            
             resolveLookups(wb, elements, unprocessedDefinitions[1:], copy)

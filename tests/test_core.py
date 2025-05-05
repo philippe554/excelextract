@@ -8,11 +8,16 @@ def test_1(tmp_path):
 
     with open(tmp_path / "employees.csv", "r") as f:
         output = f.read()
-    print("Output CSV:\n" + output)
+    print("Employees CSV:\n" + output)
     assert len(output.splitlines()) == 10
 
     with open(tmp_path / "inventory.csv", "r") as f:
         output = f.read()
-    print("Output CSV:\n" + output)
+    print("Inventory CSV:\n" + output)
     assert len(output.splitlines()) == 17
+
+    with open(tmp_path / "findcell.csv", "r") as f:
+        output = f.read()
+    print("Find Cell CSV:\n" + output)
+    assert output.splitlines()[1] == "\"12\",\"F\""
 

@@ -256,6 +256,20 @@ Finds the row number(s) or column letter(s) containing specific text. Useful for
 | `row`       | Number            | **For `findColumn` only:** Optional. Restrict the search to this specific row number (e.g., `1`).                                                                                                               |
 | `select`    | String/Num/List | Optional (default: `"first"`). Controls which match(es) to use if multiple cells match the criteria. \<br/\> - `"first"`: Use the first match found. \<br/\> - `"last"`: Use the last match found. \<br/\> - *Future:* Integer or List support. |
 
+**Lookup Operation: `findcell`**
+
+Searches an entire sheet for a cell containing specific text and defines tokens for both its row number and column letter. This is useful when you need to locate a specific anchor point in a sheet and then potentially use its row and column context for further extractions.
+
+| Field       | Type   | Description                                                                                                                                                                                                     |
+|-------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `operation`   | String           | Must be `"findcell"` |
+| `match`     | String or List | The exact (case-sensitive) text to find within a cell on the specified sheet.                                                                                                                                                                                           |
+| `sheet`     | String | Name of the sheet to search within. Can use tokens (e.g., `"%%DATA_SHEET%%"`).                                                                                                                                                                                           |
+| `rowtoken`  | String | Name of the token that will hold the row number of the found cell (e.g., `"HEADER_ROW"`).                                                                                                                                                                                          |
+| `columntoken` | String | Name of the token that will hold the column letter of the found cell (e.g., `"DATA_COLUMN"`).                                                                                                                                                                                      |
+
+This operation is the exception on the rule, which does not have the `token` field, but generates 2 tokens: `rowtoken` and `columntoken`.
+
 **Lookup Operations: `loopRows`, `loopColumns`**
 
 Iterates through a range of row numbers or column letters, assigning the current value to a token for each step.
