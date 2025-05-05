@@ -4,12 +4,12 @@
             "output": "employees.csv",
             "lookups": [
                 {
-                    "type": "loopSheets",
+                    "operation": "loopSheets",
                     "token" : "COMPANY_SHEET",
                     "regex" : "company.*"
                 },
                 {
-                    "type": "looprows",
+                    "operation": "looprows",
                     "start": 2,
                     "end": 10,
                     "token": "ROW"
@@ -31,29 +31,27 @@
             "output": "inventory.csv",
             "lookups": [
                 {
-                    "type": "loopSheets",
+                    "operation": "loopSheets",
                     "token" : "COMPANY_SHEET",
                     "regex" : "company.*"
                 },
                 {
-                    "type": "findRow",
-                    "regex": "Inventory",
+                    "operation": "findRow",
+                    "match": "Inventory",
                     "sheet": "%%COMPANY_SHEET%%",
                     "column": "A",
-                    "offset": 0,
                     "token": "HEADER_ROW"
                 },
                 {
-                    "type": "looprows",
+                    "operation": "looprows",
                     "token": "ROW",
-                    "sheet": "%%COMPANY_SHEET%%",
                     "stride": 2,
                     "start": "%%HEADER_ROW%%",
                     "startOffset": 1,
                     "count": 8
                 },
                 {
-                    "type": "loopcolumns",
+                    "operation": "loopcolumns",
                     "start": "C",
                     "end": "F",
                     "token": "COL"

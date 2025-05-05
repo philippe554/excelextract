@@ -17,12 +17,11 @@ def generateTestData(path):
     config = {
         "exports": [
             {
-                "inputFolder": str(path),
-                "inputRegex": ".*",
+                "input": str(path / "test_data.xlsx"),
                 "output": str(path / "output.csv"),
                 "lookups": [
                     {
-                        "type": "looprows",
+                        "operation": "looprows",
                         "start": 2,
                         "end": 10,
                         "token": "ROW",

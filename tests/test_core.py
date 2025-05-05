@@ -1,7 +1,7 @@
 import subprocess
 
 def test_1(tmp_path):
-    result = subprocess.run(["excelextract", "tests/data/config.json", "-i", "tests/data", "-o", tmp_path], capture_output=True, text=True)
+    result = subprocess.run(["excelextract", "tests/data/config.json", "-i", "tests/data/*.xlsx", "-o", tmp_path], capture_output=True, text=True)
     print("STDOUT:\n" + result.stdout)
     print("STDERR:\n" + result.stderr)
     assert result.returncode == 0
