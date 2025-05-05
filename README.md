@@ -216,7 +216,7 @@ Note: all keys/fields are case insensitive.
 
 | Field    | Type             | Required | Description                                                                                                                                                              |
 |----------|------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `input`  | String or List   | Yes      | Specifies the input Excel file(s). \<br/\> - If String: A path potentially containing glob wildcards (`*`, `?`, `**`). \<br/\> - If List: A list of path strings (each supporting glob). |
+| `input`  | String or List   | Yes      | Specifies the input Excel file(s). <br> - If String: A path potentially containing glob wildcards (`*`, `?`, `**`). <br> - If List: A list of path strings (each supporting glob). |
 | `output` | String           | Yes      | The name of the CSV file to be created with the extracted data.                                                                                                            |
 | `lookups`| List             | Yes      | A list of lookup operations to find locations and define tokens. Executed in order.                                                                                        |
 | `columns`| List             | Yes      | A list defining the columns for your output CSV file.                                                                                                                    |
@@ -242,7 +242,7 @@ Loops over sheets in the current workbook that match a regex pattern.
 |-------------|--------|-------------------------------------------------------------------------------------------|
 | `operation` | String | Must be `"loopsheets"`.                                                                   |
 | `token`     | String | Name of the token that will hold the matching sheet name (e.g., `"DATA_SHEET"`).           |
-| `regex`     | String | The pattern (regex) to match sheet names against (e.g., `"Sheet\\d+"` matches Sheet1, Sheet2...). |
+| `regex`     | String | The pattern (regex) to match sheet names against (e.g., `"Survey.*"` matches Survey1, Survey2, ...). |
 
 **Lookup Operations: `findRow`, `findColumn`**
 
@@ -253,10 +253,10 @@ Finds the row number(s) or column letter(s) containing specific text. Useful for
 | `operation` | String            | Must be `"findRow"` or `"findColumn"`.                                                                                                                                                                         |
 | `token`     | String            | Name of the token that will hold the row number(s) or column letter(s) found (e.g., `"HEADER_ROW"`). If multiple values are selected (via `select`), the token might hold a list.                               |
 | `sheet`     | String            | Name of the sheet to search within. Can use tokens (e.g., `"%%DATA_SHEET%%"`). Required.                                                                                                                       |
-| `match`     | String or List    | Required. Specifies the text to find in cells. \<br/\> - If String: Matches cells containing this exact (case-sensitive) string. \<br/\> - If List: Matches cells containing exactly (case-sensitive) any string in the list. |
+| `match`     | String or List    | Required. Specifies the text to find in cells. <br> - If String: Matches cells containing this exact (case-sensitive) string. <br> - If List: Matches cells containing exactly (case-sensitive) any string in the list. |
 | `column`    | String            | **For `findRow` only:** Optional. Restrict the search to this specific column (e.g., `"A"`).                                                                                                                  |
 | `row`       | Number            | **For `findColumn` only:** Optional. Restrict the search to this specific row number (e.g., `1`).                                                                                                               |
-| `select`    | String/Num/List | Optional (default: `"first"`). Controls which match(es) to use if multiple cells match the criteria. \<br/\> - `"first"`: Use the first match found. \<br/\> - `"last"`: Use the last match found. \<br/\> - *Future:* Integer or List support. |
+| `select`    | String/Num/List | Optional (default: `"first"`). Controls which match(es) to use if multiple cells match the criteria. <br> - `"first"`: Use the first match found. <br> - `"last"`: Use the last match found. <br> - *Future:* Integer or List support. |
 | `unique` | Bool | Optional (default: `false`). Regardless which match is selected (e.g., `"first"`), if this is set and more than 1 match is found, the export exists with an error |
 
 **Lookup Operation: `findcell`**
@@ -297,7 +297,7 @@ Defines the structure of your output CSV file. Each object in the `columns` list
 |-------------|---------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `name`      | String  | Yes      | The header name for this column in the output CSV file.                                                                                                                                                 |
 | `type`      | String  | Yes      | Data type for the output column. Use `"string"` for text, `"number"` for numeric values (integers or decimals). Affects how data is read and potentially formatted.                                        |
-| `value`     | String  | Yes      | How to get the value for this column. Can be: \<br/\> - A **literal string**: `value: "Constant Value"` \<br/\> - A **cell reference**: `value: "SheetName!A1"` or using tokens: `value: "%%SHEET%%!B%%ROW%%"` \<br/\> - A **token**: `value: "%%FILE_NAME%%"` |
+| `value`     | String  | Yes      | How to get the value for this column. Can be: <br> - A **literal string**: `value: "Constant Value"` <br> - A **cell reference**: `value: "SheetName!A1"` or using tokens: `value: "%%SHEET%%!B%%ROW%%"` <br> - A **token**: `value: "%%FILE_NAME%%"` |
 | `trigger`   | String  | No       | Controls if this column can trigger the creation of a new row in the CSV. Options: `"nonempty"` (default), `"never"`, `"nonzero"`. See Trigger System below.                                           |
 | `rowOffset` | Number  | No       | Optional (default 0). Adds an offset to the row number part of a cell reference in `value`. Useful for getting data from adjacent rows (e.g., `value: "Data!A%%ROW%%", rowOffset: 1` gets data from row below). |
 | `colOffset` | Number  | No       | Optional (default 0). Adds an offset to the column part of a cell reference in `value`. Useful for getting data from adjacent columns.                                                                  |
@@ -356,4 +356,4 @@ MIT License © 2025 Philippe
 
 ## Contributing
 
-This tool is shared in the hope it helps others with structured data collection workflows. Pull requests, feedback, and improvements are welcome\! Please feel free to open an issue or submit a pull request on the project repository.
+This tool is shared in the hope it helps others with structured data collection workflows. Pull requests, feedback, and improvements are welcome! Please feel free to open an issue or submit a pull request on the project repository.
