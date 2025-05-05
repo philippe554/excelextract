@@ -1,7 +1,7 @@
 
-# excelextract
+# ExcelExtract
 
-**excelextract** is a straightforward command-line tool designed to help you pull structured data out of Excel spreadsheets automatically. You tell it where your data is and what you want using a simple configuration file (written in JSON), and it generates clean CSV files ready for analysis.
+**ExcelExtract** is a straightforward command-line tool designed to help you pull structured data out of Excel spreadsheets automatically. You tell it where your data is and what you want using a simple configuration file (written in JSON), and it generates clean CSV files ready for analysis.
 
 It’s particularly helpful for researchers, data collectors, or anyone working with standardized forms, surveys, or logs stored in Excel files.
 
@@ -14,7 +14,7 @@ It’s particularly helpful for researchers, data collectors, or anyone working 
 
 ## Installation
 
-You can install excelextract using `pip`, Python's package installer. Open your terminal or command prompt and run:
+You can install ExcelExtract using `pip`, Python's package installer. Open your terminal or command prompt and run:
 
 ```bash
 pip install excelextract
@@ -24,7 +24,7 @@ pip install excelextract
 
 ## How It Works: The Configuration File
 
-The core of `excelextract` is the JSON configuration file (e.g., `config.json`). This file tells the tool everything it needs to know. It generally contains:
+The core of ExcelExtract is the JSON configuration file (e.g., `config.json`). This file tells the tool everything it needs to know. It generally contains:
 
 1.  **Input (`input`): Which Files to Process**
 
@@ -341,7 +341,7 @@ The `trigger` property on a column definition controls *if* and *when* a new row
 
 ## Built-in Tokens
 
-`excelextract` provides one special token that is always available:
+ExcelExtract provides one special token that is always available:
 
   * `%%FILE_NAME%%`: Holds the filename (including extension but excluding the path) of the Excel file currently being processed.
 
