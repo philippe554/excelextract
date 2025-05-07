@@ -339,11 +339,13 @@ The `trigger` property on a column definition controls *if* and *when* a new row
       * The trigger condition is met only if the cell referenced in the `value` field contains a **numeric value** that is **not equal to zero**. Blank cells or cells with text do not meet this condition.
       * Useful if you only want to include rows where a specific measurement or count is actually greater than zero.
 
-## Built-in Tokens
+### Built-in and Advanced Tokens
 
 ExcelExtract provides one special token that is always available:
 
   * `%%FILE_NAME%%`: Holds the filename (including extension but excluding the path) of the Excel file currently being processed.
+
+In addition, all `colums` are implicit tokens. If a `column` with name `price` is defined, then the token `%%price%%` is defined and replaces the token by that column value, both for `string` or `number` columns. This can be used in formulas, for example `= %%PRICE%% * 100` (there is a recusion limit of 100 calls).
 
 Other tokens (like `%%ROW%%`, `%%SURVEY_SHEET%%`, `%%HEADER_ROW%%`) are defined by you within the `lookups` section using the `token` field.
 
@@ -356,6 +358,7 @@ Other tokens (like `%%ROW%%`, `%%SURVEY_SHEET%%`, `%%HEADER_ROW%%`) are defined 
   * Can find specific rows/columns based on cell content using `match` (for exact or alternative strings) without requiring regex, while `loopsheets` still uses regex for sheet name patterns. Uses `select` to choose which match(es) to use.
   * Flexible **Trigger System** (defaulting to `nonempty`) to precisely control when data rows are created based on whether key cells contain data or meet specific conditions (`nonzero`).
   * Use Excel style functions (e.g., `=sum(sheet!B2:B20)`) to extract aggregated data.
+  * Use earlier defined columns in new columns, see `implicit tokens`.
   * Combines data from multiple sheets and multiple Excel files into single CSV outputs.
   * Outputs standard CSV files (UTF-8 encoded) compatible with most data analysis tools and spreadsheets.
 

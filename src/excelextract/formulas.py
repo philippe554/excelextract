@@ -57,5 +57,5 @@ def evaluate(wb, formula):
         return func(*inputs)
 
     except Exception as e:
-        raise ValueError(f"Error parsing formula: {e}")
+        raise ValueError(f"Error parsing formula: {formula}. Error: {str(e)}")
 

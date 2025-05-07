@@ -4,6 +4,8 @@ All notable changes to ExcelExtract will be documented in this file.
 
 ## [Unreleased]
 
+- Columns are implicit tokens, and can be used for calculations.
+
 ## [0.4.0] - 2025-05-05
 
 - Add Excel style formulas using the Formulas package

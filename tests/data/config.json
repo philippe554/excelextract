@@ -90,8 +90,30 @@
                 {"name": "constant", "type": "number", "value": "=3/2"},
                 {"name": "string", "type": "string", "value": "=CONCATENATE(\"Hello\", \" \", \"World\")"},
                 {"name": "date", "type": "string", "value": "=DATE(2023, 10, 1)"},
-                {"name": "boolean", "type": "boolean", "value": "=TRUE()"},
+                {"name": "boolean", "type": "string", "value": "=TRUE()"},
                 {"name": "if", "type": "string", "value": "=IF('company 1'!C16 > 0, \"Yes\", \"No\")"}
+            ]
+        },
+        {
+            "output": "implicit.csv",
+            "lookups": [
+                {
+                    "operation": "loopSheets",
+                    "token" : "COMPANY_SHEET",
+                    "regex" : "company.*"
+                },
+                {
+                    "operation": "looprows",
+                    "start": 2,
+                    "end": 10,
+                    "token": "ROW"
+                }
+            ],
+            "columns": [
+                {"name": "File", "type": "string", "value": "%%FILE_NAME%%", "trigger": "never"},
+                {"name": "Years", "type": "number", "value": "%%COMPANY_SHEET%%!D%%ROW%%"},
+                {"name": "Hours", "type": "number", "value": "%%COMPANY_SHEET%%!F%%ROW%%", "trigger": "nonzero"},
+                {"name": "Random", "type": "number", "value": "= %%Years%% * %%Hours%%"}
             ]
         }
     ]

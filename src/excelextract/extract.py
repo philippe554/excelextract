@@ -6,6 +6,56 @@ from .tokens import applyTokenReplacement
 from .lookup import resolveLookups
 from .formulas import evaluate
 
+def getColValue(wb, colDict, colName, tokens, recursionDepth = 0):
+    if recursionDepth > 100:
+        raise ValueError("Recursion limit exceeded while resolving column value.")
+    
+    colSpec = colDict[colName]
+    valueTemplate = colSpec.get("value", "")
+
+    replacedValue = applyTokenReplacement(valueTemplate, tokens)
+
+    # After the main tokens are replaced, check for other column references.
+    colNames = colDict.keys()
+    for otherColName in colNames:
+        if otherColName != colName:
+            if "%%" + otherColName + "%%" in replacedValue:
+                otherColValue = getColValue(wb, colDict, otherColName, tokens, recursionDepth + 1)
+
+                otherType = colDict[otherColName].get("type", "string").lower()
+                if otherType == "number":
+                    if otherColValue is None:
+                        otherColValue = 0
+
+                replacedValue = replacedValue.replace("%%" + otherColName + "%%", str(otherColValue) if otherColValue is not None else "")
+
+    if replacedValue.strip().startswith("="):
+        return evaluate(wb, replacedValue)                
+        
+    else:
+        # If the replaced value contains "!", treat it as a cell reference in the format "SheetName!CellRef".
+        if "!" in replacedValue:
+            parts = replacedValue.split("!", 1)
+            refSheetName = parts[0]
+            cellRef = parts[1]
+
+            if "rowoffset" in colSpec and colSpec["rowoffset"] != 0:
+                cellCoord = list(coordinate_from_string(cellRef))
+                cellCoord[1] += colSpec["rowoffset"]
+                cellRef = cellCoord[0] + str(cellCoord[1])
+            if "coloffset" in colSpec and colSpec["coloffset"] != 0:
+                cellCoord = list(coordinate_from_string(cellRef))
+                cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + colSpec["coloffset"])
+                cellRef = cellCoord[0] + str(cellCoord[1])
+
+            try:
+                sheet = wb[refSheetName]
+                return sheet[cellRef].value
+            except Exception as e:
+                raise ValueError("Error reading cell {cellRef} from sheet {refSheetName}")
+        else:
+            return replacedValue
+
 def extract(exportConfig, wb, filename):
     allRows = []
 
@@ -18,55 +68,24 @@ def extract(exportConfig, wb, filename):
     if len(tokensPerRow) == 0:
         tokensPerRow = [{"FILE_NAME": filename}]
 
+    colDict = {col["name"]: col for col in exportConfig["columns"]}
+
     for tokens in tokensPerRow:
         rowData = {}
         triggerHit = False        
 
-        # For each column in the configuration, perform token replacement.
-        for col in exportConfig["columns"]:
-            colName = col.get("name")
+        for colName, colSpec in colDict.items():
+            cellVal = getColValue(wb, colDict, colName, tokens)
 
-            colType = col.get("type", "string").lower()
-            if colType not in ["string", "number"]:
-                print(f"  Error: Invalid type '{colType}' for column '{colName}'. Using default type 'string'.")
-                colType = "string"
-
-            valueTemplate = col.get("value", "")
-
-            trigger = col.get("trigger", "default").lower()
+            trigger = colSpec.get("trigger", "default").lower()
             if trigger not in ["default", "nonempty", "never", "nonzero"]:
                 print(f"  Error: Invalid trigger '{trigger}' for column '{colName}'. Using default trigger.")
                 trigger = "default"
 
-            replacedValue = applyTokenReplacement(valueTemplate, tokens)
-
-            if replacedValue.strip().startswith("="):
-                cellVal = evaluate(wb, replacedValue)
-                
-            else:
-                # If the replaced value contains "!", treat it as a cell reference in the format "SheetName!CellRef".
-                if "!" in replacedValue:
-                    parts = replacedValue.split("!", 1)
-                    refSheetName = parts[0]
-                    cellRef = parts[1]
-
-                    if "rowoffset" in col and col["rowoffset"] != 0:
-                        cellCoord = list(coordinate_from_string(cellRef))
-                        cellCoord[1] += col["rowoffset"]
-                        cellRef = cellCoord[0] + str(cellCoord[1])
-                    if "coloffset" in col and col["coloffset"] != 0:
-                        cellCoord = list(coordinate_from_string(cellRef))
-                        cellCoord[0] += get_column_letter(column_index_from_string(cellCoord[0]) + col["coloffset"])
-                        cellRef = cellCoord[0] + str(cellCoord[1])
-
-                    try:
-                        sheet = wb[refSheetName]
-                        cellVal = sheet[cellRef].value
-                    except Exception as e:
-                        print(f"  Error: Error reading cell {cellRef} from sheet {refSheetName} in file {filename}: {e}")
-                        cellVal = None
-                else:
-                    cellVal = replacedValue
+            colType = colSpec.get("type", "string").lower()
+            if colType not in ["string", "number"]:
+                print(f"  Error: Invalid type '{colType}' for column '{colName}'. Using default type 'string'.")
+                colType = "string"
 
             # Convert the cell value according to the specified type.
             if colType == "number":

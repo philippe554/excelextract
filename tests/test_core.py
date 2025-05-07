@@ -26,3 +26,8 @@ def test_1(tmp_path):
     print("Formulas CSV:\n" + output)
     assert output.splitlines()[1] == "33.0,1.5,\"Hello World\",\"45200\",\"True\",\"Yes\""
 
+    with open(tmp_path / "implicit.csv", "r") as f:
+        output = f.read()
+    print("Implicit CSV:\n" + output)
+    assert output.splitlines()[1] == "\"surveys.xlsx\",4.0,40.0,160.0"
+
