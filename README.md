@@ -339,6 +339,59 @@ The `trigger` property on a column definition controls *if* and *when* a new row
       * The trigger condition is met only if the cell referenced in the `value` field contains a **numeric value** that is **not equal to zero**. Blank cells or cells with text do not meet this condition.
       * Useful if you only want to include rows where a specific measurement or count is actually greater than zero.
 
+### Simplified Table Extraction (`simple_table`)
+
+For scenarios where your data is organized as a straightforward rectangular table within one or more sheets, with headers clearly defined in a single row, the `simple_table` mode provides a convenient way to automatically define columns based on these headers and extract the data rows below.
+
+When a `simple_table` key is present in an export job, it instructs ExcelExtract to operate in a simplified mode for extracting data from a specific table range within a sheet. It automatically generates the necessary internal structure (equivalent to a row loop and multiple `columns` definitions) based on your simple specification.
+
+This mode is particularly powerful when combined with the `loopsheets` operation, allowing you to easily extract data from identically or similarly structured tables across multiple sheets into a single output file. The generated column definitions from the `simple_table` are added to any columns explicitly defined in the `columns` list for the same export job.
+
+#### `simple_table` Fields
+
+Note: `simple_table` is currently not implemented.
+
+The `simple_table` key should contain an object with the following fields:
+
+| Field              | Type             | Required | Default         | Description                                                                                                                                                                                                                                                                                          |
+|--------------------|------------------|----------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sheet`            | String           | Yes      | None            | The name of the sheet containing the simple table. This **must** be a literal sheet name (e.g., `"Data"`) or a token (e.g., `"%%SHEET_NAME%%"`) obtained from a preceding `loopsheets` operation.                                                                                                    |
+| `header_row`       | Number or String | No       | 1               | The row number containing the column headers for the table. ExcelExtract will read cells in this row to determine output column names. Can be a literal number or a token (e.g., `"%%HEADER_LOC%%"`).                                                                                                   |
+| `start_row`        | Number or String | No       | `header_row` + 1| The row number where the actual data begins (immediately below the header). Can be a literal number or a token (e.g., `"%%DATA_START%%"`).                                                                                                                                                           |
+| `end_row`          | Number or String | No       | None            | The row number where the data extraction should stop (inclusive). Mutually exclusive with `count`. Can be a literal number or a token.                                                                                                                                                                   |
+| `count`            | Number           | No       | 500             | The maximum number of data rows to extract starting from `start_row`. Mutually exclusive with `end_row`. |
+| `start_column`     | String           | No       | "A"             | The letter of the first column to include in the table extraction. Can be a literal column letter or a token (e.g., `"%%START_COL%%"`).                                                                                                                                                                 |
+| `end_column`       | String           | No       | Auto-detected   | The letter of the last column to include in the table extraction. If omitted, ExcelExtract will detect the last non-empty cell in the `header_row` starting from `start_column` and use that column as the end. Can be a literal column letter or a token.                                           |
+| `source_file_column` | String           | No       | None            | If provided, a column with this header name will be added to the beginning of the output CSV. Its value for each row will be the filename of the source Excel file being processed. This field does NOT support tokens for its value (it's the literal header name).                                      |
+| `sheet_name_column` | String           | No       | None            | If provided, a column with this header name will be added to the beginning of the output CSV. Its value for each row will be the sheet name being processed. |
+
+
+#### How `simple_table` Generates Columns (Technical Explanation)
+
+When `simple_table` is used, ExcelExtract performs the following steps internally for each input file matched by the top-level `input` pattern:
+
+1.  It resolves any tokens in the `sheet`, `header_row`, `start_row`, `end_row`, `count`, `start_column`, and `end_column` fields based on any preceding lookups.
+2.  It identifies the `header_row` within the specified `sheet`.
+3.  It reads the cells in the `header_row` starting from the resolved `start_column` to the resolved `end_column` (or the auto-detected `end_column`).
+4.  For each non-empty cell found in this header range, it uses the cell's string value as the `name` for an output CSV column.
+5.  It generates an internal column definition for each detected header, setting its `value` to reference the corresponding cell in the table data rows (e.g., `"SheetName!ColLetter%%INTERNAL_ROW_TOKEN%%"`). The `type` for these auto-generated data columns defaults to `"string"`. The `trigger` defaults to `"nonempty"`.
+6.  If `source_file_column` is specified, it adds an additional column definition *before* the detected data columns. This column uses the specified name as its header, has `"type": "string"`, its value is the internal `%%FILE_NAME%%` token, and its `trigger` is set to `"never"`.
+7.  These auto-generated column definitions are combined with any columns explicitly listed under the `columns` key in the export job.
+8.  The tool then implicitly sets up a row loop based on the resolved `start_row`, `end_row`, and `count` parameters and proceeds to extract data using the combined list of column definitions for each row in that loop.
+
+Essentially, the `simple_table` mode is a shortcut for defining a common set of `lookups` (`looprows` from `start_row`/`count`/`end_row`) and `columns` (one for each header cell in the specified range, plus an optional filename column). If your data structure requires more complex logic than this (e.g., non-rectangular tables, headers spanning multiple rows, data scattered in non-contiguous cells, different trigger logic per column, calculations), you will need to use the full `lookups` and `columns` configuration.
+
+#### Interaction with Lookups and Edge Cases
+
+The `simple_table` configuration streamlines the process of extracting rectangular data. Understanding its interaction with other lookup types is key to effective use:
+
+* **Compatibility with `loopsheets`:** This is a recommended use case. Include a `loopsheets` lookup to iterate over sheets, and use the sheet token (e.g., `%%SHEET_NAME%%`) in the `simple_table`'s `sheet` field. ExcelExtract will apply the `simple_table` logic to each sheet found by `loopsheets`, combining the results.
+* **Handling Varying Columns Across Sheets (with `loopsheets`):** When using the `simple_table` configuration in conjunction with a `loopsheets` lookup, ExcelExtract identifies *all unique header names* present in the specified `header_row` (`start_column` to `end_column`) across **all sheets** matched by the `loopsheets` pattern. The output CSV will include a column for every single unique header name encountered across all sheets. For rows extracted from a specific sheet, if that sheet's header row did not contain a header corresponding to a column in the final, combined list of headers, the value in the output CSV for that cell will be empty.
+* **Incompatibility with `looprows` and `loopcolumns`:** You **must not** include `looprows` or `loopcolumns` lookups in the same export job as a `simple_table` configuration. The `simple_table` mode generates its own internal row iteration (from `start_row` for `count`/to `end_row`). Including another explicit row or column loop will create conflicting iteration logic and lead to incorrect or massively duplicated output.
+* **Compatibility with `find*` Lookups:** Non-looping lookups such as `findrow`, `findcolumn`, and `findcell` can be used effectively before the `simple_table` configuration. Use these lookups to dynamically find locations (like a header row or table corner) and define tokens (e.g., `%%HEADER_ROW_TOKEN%%`, `%%FIRST_COL_TOKEN%%`). You can then use these tokens in the `simple_table`'s `header_row`, `start_row`, `end_row`, `count`, `start_column`, or `end_column` fields to make your table extraction dynamic even within a single sheet or when combined with `loopsheets`.
+
+In summary, the `simple_table` mode provides a powerful shortcut for standard table extraction. Use it on its own for a single sheet, or combine it with `loopsheets` and non-looping `find*` lookups for more dynamic scenarios involving multiple sheets or variable table locations, but avoid using it alongside `looprows` or `loopcolumns`.
+
 ### Built-in and Advanced Tokens
 
 ExcelExtract provides one special token that is always available:
