@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .utils import cleanConfig
+from .simpleTable import resolveSimpleTable
 from .io import loopFiles
 
 def main():
@@ -55,6 +56,8 @@ def main():
                 exportConfig["output"] = "output.csv"
             if args.output:
                 exportConfig["output"] = args.output / exportConfig["output"]
+
+            exportConfig = resolveSimpleTable(exportConfig)
 
             loopFiles(exportConfig)
 

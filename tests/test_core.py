@@ -34,6 +34,11 @@ def test_1(tmp_path):
     with open(tmp_path / "basic.csv", "r") as f:
         output = f.read()
     print("Basic CSV:\n" + output)
-    assert output.splitlines()[1] == "\"Alice\",\"Engineer\",\"30000\",\"4\",\"USD\",\"40\",\"surveys.xlsx\""
+    assert output.splitlines()[1] == "\"Alice\",\"Engineer\",\"30000\",\"4\",\"USD\",\"40\""
     assert len(output.splitlines()) == 8
+
+    with open(tmp_path / "simpleTable.csv", "r") as f:
+        output2 = f.read()
+    print("Simple Table CSV:\n" + output2)
+    assert output == output2
 

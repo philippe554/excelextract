@@ -135,17 +135,19 @@
             ],
             "columns": [
                 {
-                    "name": "File",
-                    "type": "string",
-                    "value": "%%FILE_NAME%%",
-                    "trigger": "never"
-                },
-                {
                     "name": "basic!%%COL%%1",
                     "type": "string",
                     "value": "basic!%%COL%%%%ROW%%"
                 }
             ]
+        },
+        {
+            "output": "simpleTable.csv",
+            "simpleTable": {
+                "sheet": "basic",
+                "count": 100,
+                "endCol": "F"
+            }
         }
     ]
 }
