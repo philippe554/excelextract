@@ -396,11 +396,27 @@ In summary, the `simple_table` mode provides a powerful shortcut for standard ta
 
 ExcelExtract provides one special token that is always available:
 
-  * `%%FILE_NAME%%`: Holds the filename (including extension but excluding the path) of the Excel file currently being processed.
+* `%%FILE_NAME%%`: Holds the filename (including extension but excluding the path) of the Excel file currently being processed.
 
-In addition, all `colums` are implicit tokens. If a `column` with name `price` is defined, then the token `%%price%%` is defined and replaces the token by that column value, both for `string` or `number` columns. This can be used in formulas, for example `= %%PRICE%% * 100` (there is a recusion limit of 100 calls).
+Other tokens (like `%%ROW%%`, `%%SHEET%%`, or custom loop tokens) are defined by you within the `lookups` section.
 
-Other tokens (like `%%ROW%%`, `%%SURVEY_SHEET%%`, `%%HEADER_ROW%%`) are defined by you within the `lookups` section using the `token` field.
+#### Implicit Tokens
+
+Any column defined in your `columns` list can be used as an "implicit token" in the `value` field of other columns. If you have a column that resolves to the name `price`, you can use `%%price%%` in another column's `value` (e.g., `value: "=%%price%% * 1.2"`). The system replaces `%%price%%` with the calculated value of the "price" column. This works for both `string` and `number` types and has a recursion limit to prevent loops.
+
+#### Tokens in Column Names
+
+You can use any non-implicit token in the `name` field of a column definition. This allows the actual column headers in your output CSV to be dynamically generated. Often the `intrarow` feature described bellow is required to generate multiple columns, but this can also be used without `intrarow`.
+
+#### Intrarow Loops
+
+**Note:** This is an advanced feature for complex data reshaping. The full extent of its behavior in all edge cases is extensive. For example, columns which are expanded based on this feature are not available as implicit tokens.
+
+You can add `"intrarow": true` to a `lookup` definition (typically a `loopcolumns` or `loopsheets` operation). This tells ExcelExtract to use that loop to generate multiple columns *within a single CSV row*, rather than creating new CSV rows for each loop iteration.
+
+To take advantage of this feature, you need to use this token in the column name.
+
+This feature allows for powerful data pivoting and aggregation directly during extraction.
 
 ## Key Features Summary
 
