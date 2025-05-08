@@ -60,8 +60,13 @@ def loopFiles(exportConfig):
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
 
-    with open(outputFile, "w", newline="", encoding="utf-8-sig") as csvfile:
-        fieldNames = [col["name"] for col in exportConfig.get("columns", [])]
+    with open(outputFile, "w", newline="", encoding="utf-8-sig") as csvfile:       
+        fieldNames = []
+        for row in allRows:
+            for key in row.keys():
+                if key not in fieldNames:
+                    fieldNames.append(key)
+        
         writer = csv.DictWriter(csvfile, fieldnames = fieldNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
         writer.writeheader()
         for row in allRows:

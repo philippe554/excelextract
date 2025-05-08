@@ -31,3 +31,9 @@ def test_1(tmp_path):
     print("Implicit CSV:\n" + output)
     assert output.splitlines()[1] == "\"surveys.xlsx\",4.0,40.0,160.0"
 
+    with open(tmp_path / "basic.csv", "r") as f:
+        output = f.read()
+    print("Basic CSV:\n" + output)
+    assert output.splitlines()[1] == "\"Alice\",\"Engineer\",\"30000\",\"4\",\"USD\",\"40\",\"surveys.xlsx\""
+    assert len(output.splitlines()) == 8
+

@@ -115,6 +115,37 @@
                 {"name": "Hours", "type": "number", "value": "%%COMPANY_SHEET%%!F%%ROW%%", "trigger": "nonzero"},
                 {"name": "Random", "type": "number", "value": "= %%Years%% * %%Hours%%"}
             ]
+        },
+        {
+            "output": "basic.csv",
+            "lookups": [
+                {
+                    "operation": "looprows",
+                    "start": 2,
+                    "end": 10,
+                    "token": "ROW"
+                },
+                {
+                    "operation": "loopcolumns",
+                    "start": "A",
+                    "end": "F",
+                    "token": "COL",
+                    "intrarow": true
+                }
+            ],
+            "columns": [
+                {
+                    "name": "File",
+                    "type": "string",
+                    "value": "%%FILE_NAME%%",
+                    "trigger": "never"
+                },
+                {
+                    "name": "basic!%%COL%%1",
+                    "type": "string",
+                    "value": "basic!%%COL%%%%ROW%%"
+                }
+            ]
         }
     ]
 }
