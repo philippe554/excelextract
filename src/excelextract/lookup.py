@@ -5,10 +5,18 @@ from openpyxl.utils import column_index_from_string, get_column_letter
 
 from .tokens import applyTokenReplacement
 
-def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElement = {}):
+def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElement = {}, wbMaxSize = None):
     if len(unprocessedDefinitions) == 0:
         elements.append(currentElement)
     else:
+        if wbMaxSize is None:
+            maxRows = 0
+            maxCols = 0
+            for sheet in wb.worksheets:
+                maxRows = max(maxRows, sheet.max_row)
+                maxCols = max(maxCols, sheet.max_column)
+            wbMaxSize = (maxRows, maxCols)
+
         loopDefinition = unprocessedDefinitions[0]
 
         if not isinstance(loopDefinition, dict):
@@ -134,16 +142,33 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 raise ValueError("Cannot specify both 'end' and 'count' in loop definition")
 
             if "end" in loopDefinition:
-                end = applyTokenReplacement(loopDefinition["end"], currentElement)
-                if operation == "loopcolumns":
-                    end = column_index_from_string(end)
+                if loopDefinition["end"] is None:
+                    end = None
+                else:
+                    end = applyTokenReplacement(loopDefinition["end"], currentElement)
+                    if operation == "loopcolumns":
+                        end = column_index_from_string(end)
             elif "count" in loopDefinition:
                 count = applyTokenReplacement(loopDefinition["count"], currentElement)
                 end = start + count - 1
-            elif "untilNoMatch" in loopDefinition and loopDefinition["untilNoMatch"]:
-                raise ValueError("untilNoMatch is not implemented yet")
             else:
-                raise ValueError("Must specify either 'end' or 'count' in loop definition")
+                end = None
+
+            if end is None:
+                if "hint" in loopDefinition:
+                    hint = applyTokenReplacement(loopDefinition["hint"], currentElement)
+                    if hint not in wb.sheetnames:
+                        raise ValueError(f"Sheet '{hint}' not found in workbook")
+                    sheet = wb[hint]
+                    if operation == "loopcolumns":
+                        end = sheet.max_column
+                    else:
+                        end = sheet.max_row
+                else:
+                    if operation == "loopcolumns":
+                        end = wbMaxSize[1]
+                    else:
+                        end = wbMaxSize[0]
 
             stride = loopDefinition.get("stride", 1)
             startOffset = loopDefinition.get("startoffset", 0)
@@ -181,4 +206,4 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 else:
                     raise ValueError(f"Duplicate token '{token}' in loop definition: {loopDefinition}")
             
-            resolveLookups(wb, elements, unprocessedDefinitions[1:], copy)
+            resolveLookups(wb, elements, unprocessedDefinitions[1:], copy, wbMaxSize)

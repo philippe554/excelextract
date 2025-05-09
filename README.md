@@ -50,6 +50,8 @@ The core of ExcelExtract is the JSON configuration file (e.g., `config.json`). T
       * You specify the data `type` (`string`, `number`) for the output column.
       * You also control *when* a row should be created using **Triggers**.
 
+Alternatively, for simple excel sheets (a simple row with headers), you can skip all lookups and column definitions, and use the `simpletable` option to specify the sheet you want to extract. See more information bellow.
+
 ## Simple Example: Extracting a Single Table
 
 Let's start with a basic task. Imagine you have one Excel file named `report.xlsx` in a folder called `source_data`. Inside this file, there's a sheet named "Data". On this sheet, participant information starts at row 3. You want to extract the 'Name' from column B and 'Value' from column D for all rows where *either* the name *or* the value is present.
@@ -133,7 +135,7 @@ Here’s the configuration (`config.json`):
           "token": "ROW",                   // Create placeholder %%ROW%% for the current row number being checked
           "start": "%%HEADER_ROW%%",        // Start looping from the header row found above...
           "startOffset": 1,                 // ...but add 1 to start on the row *below* the header
-          "count": 100                      // Check up to 100 rows (set a reasonable limit per table)
+                                            // Do not specify an end or count to loop till the end of the sheet
         }
       ],
       "columns": [
@@ -181,8 +183,6 @@ Once you have your configuration file (e.g., `config.json`) ready:
 1.  Open your terminal or command prompt.
 2.  Navigate to the directory where your `config.json` file is saved.
 3.  Run the tool by typing:
-
-<!-- end list -->
 
 ```bash
 excelextract config.json
@@ -283,11 +283,12 @@ Iterates through a range of row numbers or column letters, assigning the current
 | `operation`   | String           | Must be `"loopRows"` or `"loopColumns"`.                                                                                               |
 | `token`       | String           | Name of the token that will hold the current row number or column letter (e.g., `"ROW"`, `"COL"`).                                       |
 | `start`       | String or Number | Starting row number or column letter. Can be a literal (`1`, `"B"`) or a token (`"%%HEADER_ROW%%"`). Required.                          |
-| `end`         | String or Number | Optional. The row number or column letter to stop at (inclusive). Cannot be used together with `count`.                                  |
+| `end`         | Number | Optional. The row number or column letter to stop at (inclusive). Cannot be used together with `count`. If missing or set to None, it will loop to the end of the sheet |
 | `count`       | Number           | Optional. The maximum number of steps to take. Useful if you don't know the exact end but want to set a limit. Cannot be used with `end`. |
 | `startOffset` | Number           | Optional (default 0). Adds this offset to the `start` value. E.g., `start: "%%HEADER_ROW%%", startOffset: 1` starts one row *below* the header. |
 | `endOffset`   | Number           | Optional (default 0). Adds this offset to the `end` value.                                                                           |
 | `stride`      | Number           | Optional (default 1). Step size for the loop. E.g., `stride: 2` processes every second row/column.                                   |
+| `hint`        | String           | Automatic end detection can be slow if there is a sheet which contains a lot of rows/columns while trying to iterate a smaller sheet. `Hint` specifies which sheet you are trying to iterate over. |
 
 ### Column Definitions (`columns`)
 
@@ -359,7 +360,7 @@ The `simpletable` key should contain an object with the following fields:
 | `header_row`       | Number or String | No       | 1               | The row number containing the column headers for the table. ExcelExtract will read cells in this row to determine output column names. Can be a literal number or a token (e.g., `"%%HEADER_LOC%%"`).                                                                                                   |
 | `startrow`        | Number or String | No       | `headerrow` + 1| The row number where the actual data begins (immediately below the header). Can be a literal number or a token (e.g., `"%%DATA_START%%"`).                                                                                                                                                           |
 | `endrow`          | Number or String | No       | None            | The row number where the data extraction should stop (inclusive). Mutually exclusive with `count`. Can be a literal number or a token.                                                                                                                                                                   |
-| `count`            | Number           | No       | 500             | The maximum number of data rows to extract starting from `start_row`. Mutually exclusive with `endrow`. |
+| `count`            | Number           | No       | None             | The maximum number of data rows to extract starting from `start_row`. Mutually exclusive with `endrow`. |
 | `startcolumn`     | String           | No       | "A"             | The letter of the first column to include in the table extraction. Can be a literal column letter or a token (e.g., `"%%START_COL%%"`).                                                                                                                                                                 |
 | `end_column`       | String           | No       | Auto-detected   | The letter of the last column to include in the table extraction. If omitted, ExcelExtract will detect the last non-empty cell in the `headerrow` starting from `startcolumn` and use that column as the end. Can be a literal column letter or a token.                                           |
 | `sourcefilecolumn` | String           | No       | None            | If provided, a column with this header name will be added to the beginning of the output CSV. Its value for each row will be the filename of the source Excel file being processed. This field does NOT support tokens for its value (it's the literal header name).                                      |

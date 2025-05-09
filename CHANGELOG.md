@@ -4,10 +4,11 @@ All notable changes to ExcelExtract will be documented in this file.
 
 ## [Unreleased]
 
-- Column names can contain tokens, generating dynamic columns.
-- Columns are implicit tokens, and can be used for calculations.
+- Column names can contain tokens, generating dynamic columns
+- Columns are implicit tokens, and can be used for calculations
 - intrarow property is added to loops
 - basic table added
+- missing end/count field for a loop results in looping to the end of the sheet
 
 ## [0.4.0] - 2025-05-05
 

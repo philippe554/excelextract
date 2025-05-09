@@ -47,8 +47,7 @@
                     "token": "ROW",
                     "stride": 2,
                     "start": "%%HEADER_ROW%%",
-                    "startOffset": 1,
-                    "count": 8
+                    "startOffset": 1
                 },
                 {
                     "operation": "loopcolumns",
@@ -122,13 +121,11 @@
                 {
                     "operation": "looprows",
                     "start": 2,
-                    "end": 10,
                     "token": "ROW"
                 },
                 {
                     "operation": "loopcolumns",
                     "start": "A",
-                    "end": "F",
                     "token": "COL",
                     "intrarow": true
                 }
@@ -144,9 +141,7 @@
         {
             "output": "simpleTable.csv",
             "simpleTable": {
-                "sheet": "basic",
-                "count": 100,
-                "endCol": "F"
+                "sheet": "basic"
             }
         }
     ]
