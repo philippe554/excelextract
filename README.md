@@ -350,8 +350,6 @@ This mode is particularly powerful when combined with the `loopsheets` operation
 
 #### `simpletable` Fields
 
-Note: `simpletable` is currently not implemented.
-
 The `simpletable` key should contain an object with the following fields:
 
 | Field              | Type             | Required | Default         | Description                                                                                                                                                                                                                                                                                          |
