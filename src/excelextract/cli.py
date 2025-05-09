@@ -4,6 +4,8 @@ import argparse
 import json
 import sys
 from pathlib import Path
+import traceback
+import glob
 
 from .utils import cleanConfig
 from .simpleTable import resolveSimpleTable
@@ -25,45 +27,54 @@ def main():
             ),
             formatter_class=argparse.RawTextHelpFormatter
         )
-        parser.add_argument("config", type=Path, help="Path to the JSON configuration file.")
-        parser.add_argument("-i", "--input", type=Path, help="Input glob, overrides config.")
+        parser.add_argument("config", type=str, help="Path to the JSON configuration file.")
+        parser.add_argument("-i", "--input", type=str, help="Input glob, overrides config.")
         parser.add_argument("-o", "--output", type=Path, help="Output folder, prefix for output files in the config.")
 
         args = parser.parse_args()
 
-        if not args.config.exists():
-            raise FileNotFoundError(f"Config file {args.config} does not exist.")
+        configNames = glob.glob(args.config, recursive=True)
+        print(f"Found {len(configNames)} config files.")
 
-        try:
-            with args.config.open("r", encoding="utf-8") as f:
-                config = json.load(f)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Config file {args.config} is not a valid JSON file: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Error reading config file {args.config}: {e}")
+        if len(configNames) == 0:
+            raise FileNotFoundError(f"No config files found matching {args.config}.")
         
-        config = cleanConfig(config)
-
-        if "exports" not in config:
-            raise ValueError("Config file does not contain 'exports' key.")
-        exports = config["exports"]
-
-        for exportConfig in exports:
-            if args.input:
-                exportConfig["input"] = str(args.input)
+        for configName in configNames:
+            if not configName.endswith(".json"):
+                raise ValueError(f"Config file {configName} is not a JSON file.")
             
-            if "output" not in exportConfig:
-                exportConfig["output"] = "output.csv"
-            if args.output:
-                exportConfig["output"] = args.output / exportConfig["output"]
+            try:
+                with open(configName, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Config file {configName} is not a valid JSON file: {e}")
+            except Exception as e:
+                raise RuntimeError(f"Error reading config file {configName}: {e}")
+            
+            config = cleanConfig(config)
 
-            exportConfig = resolveSimpleTable(exportConfig)
+            if "exports" not in config:
+                raise ValueError("Config file does not contain 'exports' key.")
+            exports = config["exports"]
 
-            loopFiles(exportConfig)
+            for exportConfig in exports:
+                if args.input:
+                    exportConfig["input"] = str(args.input)
+                
+                if "output" not in exportConfig:
+                    exportConfig["output"] = "output.csv"
+                if args.output:
+                    exportConfig["output"] = args.output / exportConfig["output"]
+
+                exportConfig = resolveSimpleTable(exportConfig)
+
+                loopFiles(exportConfig)
 
         print("Processing completed.")
 
     except Exception as e:
+        traceback.print_exc(file=sys.stderr)
+        print()
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 

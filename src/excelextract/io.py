@@ -2,6 +2,7 @@
 import os
 import csv
 import glob
+import warnings
 
 from openpyxl import load_workbook
 
@@ -34,15 +35,17 @@ def loopFiles(exportConfig):
         inputFileName = os.path.basename(inputFile)
         if inputFileName.startswith("~$"):
             continue
-
-        print(f"Processing file: {inputFile}")
         
         try:
-            wb = load_workbook(inputFile, data_only=True)
+            with warnings.catch_warnings(action = 'ignore', category = UserWarning):
+                wb = load_workbook(inputFile, data_only=True)
         except Exception as e:
             raise ValueError(f"Error opening file {inputFile}: {e}")
         
         rows = extract(exportConfig, wb, inputFileName)
+
+        print(f"Processing {inputFile} with {len(rows)} rows extracted.")
+
         allRows.extend(rows)
 
     if len(allRows) == 0:
@@ -57,7 +60,7 @@ def loopFiles(exportConfig):
         outputFile += ".csv"
 
     outputDir = os.path.dirname(outputFile)
-    if not os.path.exists(outputDir):
+    if outputDir != "" and not os.path.exists(outputDir):
         os.makedirs(outputDir)
 
     with open(outputFile, "w", newline="", encoding="utf-8-sig") as csvfile:       
@@ -71,4 +74,6 @@ def loopFiles(exportConfig):
         writer.writeheader()
         for row in allRows:
             writer.writerow(row)
+
+    print(f"Wrote {len(allRows)} rows to {outputFile}")
         
