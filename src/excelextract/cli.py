@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 import traceback
 import glob
+import importlib.metadata
 
 from .utils import cleanConfig
 from .simpleTable import resolveSimpleTable
@@ -27,6 +28,10 @@ def main():
             ),
             formatter_class=argparse.RawTextHelpFormatter
         )
+
+        version = importlib.metadata.version("excelextract")
+
+        parser.add_argument('--version', action='version', version=version)
         parser.add_argument("config", type=str, help="Path to the JSON configuration file.")
         parser.add_argument("-i", "--input", type=str, help="Input glob, overrides config.")
         parser.add_argument("-o", "--output", type=Path, help="Output folder, prefix for output files in the config.")
