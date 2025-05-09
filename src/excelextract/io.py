@@ -37,7 +37,8 @@ def loopFiles(exportConfig):
             continue
         
         try:
-            with warnings.catch_warnings(action = 'ignore', category = UserWarning):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
                 wb = load_workbook(inputFile, data_only=True)
         except Exception as e:
             raise ValueError(f"Error opening file {inputFile}: {e}")
