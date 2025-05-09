@@ -52,7 +52,7 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 raise ValueError(f"Missing 'match' in loop definition: {loopDefinition}")
             match = loopDefinition["match"]
 
-            if type(match) == str:
+            if not isinstance(match, list):
                 match = [match]
 
             if "sheet" not in loopDefinition:
@@ -108,7 +108,7 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             match = loopDefinition["match"]
             sheet = applyTokenReplacement(loopDefinition["sheet"], currentElement)
 
-            if type(match) == str:
+            if not isinstance(match, list):
                 match = [match]
 
             rowToken = loopDefinition["rowtoken"]
@@ -148,6 +148,8 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                     end = applyTokenReplacement(loopDefinition["end"], currentElement)
                     if operation == "loopcolumns":
                         end = column_index_from_string(end)
+                    else:
+                        end = int(end)
             elif "count" in loopDefinition:
                 count = applyTokenReplacement(loopDefinition["count"], currentElement)
                 end = start + count - 1

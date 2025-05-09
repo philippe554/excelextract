@@ -175,6 +175,9 @@ def extract(exportConfig, wb, filename):
             colDict = {getColName(wb, col["name"], intraRowToken): col for col in exportConfig["columns"]}
 
             for colName, colSpec in colDict.items():
+                if colName is None or colName.strip() == "":
+                    continue
+
                 # Intra-row tokens can generate duplicate column names, just take the first one.
                 if colName in rowData:
                     continue
@@ -198,6 +201,9 @@ def extract(exportConfig, wb, filename):
         }
 
         for colName, colSpec in colDictStatic.items():
+            if colName is None or colName.strip() == "":
+                continue
+            
             # Intra-row tokens can generate duplicate column names, just take the first one.
             if colName in rowData:
                 continue
