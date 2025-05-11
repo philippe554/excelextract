@@ -4,6 +4,11 @@ All notable changes to ExcelExtract will be documented in this file.
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-05-11
+
+- Add automatic type detection
+- Add more types: integer, bool, time, date, datetime, and timedelta
+
 ## [0.5.0] - 2025-05-09
 
 - Column names can contain tokens, generating dynamic columns

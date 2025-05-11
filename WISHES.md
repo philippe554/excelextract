@@ -3,8 +3,6 @@
 
 This file contains some wishes, not all wishes are fully considered, and might be outside the scope of this package
 
-- More types (e.g., dates, booleans)
-- Auto type detection
 - More data checking (e.g., cell should be equal to, should be in range)
 - Basic cleaning (e.g., trimming, rounding)
 - Output to xlsx
