@@ -68,7 +68,7 @@ def resolveSimpleTable(config):
         config["columns"].append(
             {
                 "name": sheet + "!%%__SIMPLETABLE_COL%%" + str(headerRow),
-                "type": "string",
+                "type": "auto",
                 "value": sheet + "!%%__SIMPLETABLE_COL%%%%__SIMPLETABLE_ROW%%"
             })
         

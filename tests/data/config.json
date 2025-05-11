@@ -133,7 +133,7 @@
             "columns": [
                 {
                     "name": "basic!%%COL%%1",
-                    "type": "string",
+                    "type": "auto",
                     "value": "basic!%%COL%%%%ROW%%"
                 }
             ]
@@ -142,6 +142,12 @@
             "output": "simpleTable.csv",
             "simpleTable": {
                 "sheet": "basic"
+            }
+        },
+        {
+            "output": "types.csv",
+            "simpleTable": {
+                "sheet": "types"
             }
         }
     ]

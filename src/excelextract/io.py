@@ -7,6 +7,7 @@ import warnings
 from openpyxl import load_workbook
 
 from .extract import extract
+from .type import detectTypeOfList, convertRowToType
 
 def loopFiles(exportConfig):
     if "input" not in exportConfig:
@@ -26,6 +27,7 @@ def loopFiles(exportConfig):
         raise ValueError(f"No files found matching input glob(s): {inputGlobs}")       
         
     allRows = []
+    allTypes = {}
 
     for inputFile in inputFiles:
         if not os.path.isfile(inputFile):
@@ -43,11 +45,18 @@ def loopFiles(exportConfig):
         except Exception as e:
             raise ValueError(f"Error opening file {inputFile}: {e}")
         
-        rows = extract(exportConfig, wb, inputFileName)
+        rows, types = extract(exportConfig, wb, inputFileName)
 
         print(f"Processing {inputFile} with {len(rows)} rows extracted.")
 
         allRows.extend(rows)
+
+        for key, value in types.items():
+            if key not in allTypes:
+                allTypes[key] = value
+            else:
+                if allTypes[key] != value:
+                    raise ValueError(f"Column type mismatch for column '{key}' in file '{inputFile}': {allTypes[key]} vs {value}")
 
     if len(allRows) == 0:
         raise ValueError("No rows extracted from the input files")
@@ -65,16 +74,18 @@ def loopFiles(exportConfig):
         os.makedirs(outputDir)
 
     with open(outputFile, "w", newline="", encoding="utf-8-sig") as csvfile:       
-        fieldNames = []
-        for row in allRows:
-            for key in row.keys():
-                if key not in fieldNames:
-                    fieldNames.append(key)
+        colNames = allTypes.keys()
         
-        writer = csv.DictWriter(csvfile, fieldnames = fieldNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        for colName in colNames:
+            if allTypes[colName] == "auto":
+                data = [d[colName] for d in allRows if colName in d]
+                allTypes[colName] = detectTypeOfList(data)
+        
+        writer = csv.DictWriter(csvfile, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
         writer.writeheader()
         for row in allRows:
-            writer.writerow(row)
+            rowConverted = convertRowToType(row, allTypes)
+            writer.writerow(rowConverted)
 
     print(f"Wrote {len(allRows)} rows to {outputFile}")
         

@@ -86,56 +86,43 @@ def getColName(wb, colName, tokens):
     colName = applyTokenReplacement(colName, tokens)
     return dereferenceCell(wb, colName)
 
-def checkForTriggerAndClean(colSpec, cellVal, colName):
+def checkForTrigger(colSpec, cellVal, colName):
     trigger = colSpec.get("trigger", "default").lower()
     if trigger not in ["default", "nonempty", "never", "nonzero"]:
         raise ValueError(f"Invalid trigger '{trigger}' for column '{colName}'. Valid triggers are 'default', 'nonempty', 'never', and 'nonzero'.")
 
-    colType = colSpec.get("type", "string").lower()
-    if colType not in ["string", "number"]:
-        raise ValueError(f"Invalid type '{colType}' for column '{colName}'. Valid types are 'string' and 'number'.")
-
     isEmpty = cellVal is None or cellVal == ""
 
-    # Convert the cell value to the appropriate type based on the column type.
-    if colType == "number":
-        try:                
-            cellVal = float(cellVal) if not isEmpty else None
-        except Exception:
-            cellVal = None
-
-    elif colType == "string":
-        if trigger == "nonzero":
-            raise ValueError(f"Trigger 'nonzero' is not valid for string type column '{colName}'.")
-
-        if cellVal is not None:
-            cellVal = str(cellVal)
-
-    # Check the trigger conditions.
     if trigger == "default" or trigger == "nonempty":
-        if not isEmpty:
-            return cellVal, True
+        if isEmpty:
+            return False
         else:
-            return cellVal, False
+            return True
         
     if trigger == "nonzero":
-        if type(cellVal) != float and cellVal is not None:
-            raise RuntimeError(f"Unreachable code: cellVal is not None and not float, colName: {colName}, cellVal: {cellVal}, type: {type(cellVal)}")
-        
-        if cellVal is None or isEmpty:
-            return cellVal, False
-        elif cellVal != 0:
-            return cellVal, True
+        if isEmpty:
+            return False
         else:
-            return cellVal, False
+            try:
+                cellVal = float(cellVal)
+        
+                if cellVal is None:
+                    return False
+                elif cellVal != 0:
+                    return True
+                else:
+                    return False
+            except Exception:
+                return False
         
     elif trigger == "never":
-        return cellVal, False
+        return False
         
     raise RuntimeError(f"Unreachable code: trigger: {trigger}, colName: {colName}, cellVal: {cellVal}, type: {type(cellVal)}")
 
 def extract(exportConfig, wb, filename):
     allRows = []
+    types = {}
 
     if "columns" not in exportConfig:
         raise ValueError("Missing 'columns' in exportConfig")
@@ -188,11 +175,18 @@ def extract(exportConfig, wb, filename):
 
                 cellVal = getColValue(wb, colDict, colName, intraRowToken, None)
 
-                cellVal, triggers = checkForTriggerAndClean(colSpec, cellVal, colName)
-                if triggers:
+                if checkForTrigger(colSpec, cellVal, colName):
                     triggerHit = True
 
                 rowData[colName] = cellVal
+
+                if "type" in colSpec:
+                    if colName in types and types[colName] != colSpec["type"].lower():
+                        raise ValueError(f"Column '{colName}' has conflicting types: '{types[colName]}' and '{colSpec['type'].lower()}'.")
+                    else:
+                        types[colName] = colSpec["type"].lower()
+                else:
+                    types[colName] = "auto"
 
         # Second pass for static columns.  
         colDictStatic = {
@@ -210,14 +204,21 @@ def extract(exportConfig, wb, filename):
 
             cellVal = getColValue(wb, colDictStatic, colName, tokens, rowData)
 
-            cellVal, triggers = checkForTriggerAndClean(colSpec, cellVal, colName)
-            if triggers:
+            if checkForTrigger(colSpec, cellVal, colName):
                 triggerHit = True
 
             rowData[colName] = cellVal
+
+            if "type" in colSpec:
+                if colName in types and types[colName] != colSpec["type"].lower():
+                    raise ValueError(f"Column '{colName}' has conflicting types: '{types[colName]}' and '{colSpec['type'].lower()}'.")
+                else:
+                    types[colName] = colSpec["type"].lower()
+            else:
+                types[colName] = "auto"
 
         # Only add the row if at least one cell hits the trigger condition.
         if triggerHit:
             allRows.append(rowData)
 
-    return allRows
+    return allRows, types
