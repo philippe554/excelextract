@@ -47,7 +47,7 @@ The core of ExcelExtract is the JSON configuration file (e.g., `config.json`). T
 
       * This section defines the columns that will appear in your output CSV file.
       * For each output column, you specify its name and how to get its `value` (often using Tokens defined in `lookups`).
-      * You specify the data `type` (`string`, `number`) for the output column.
+      * You specify the data `type` (`string`, `number`, `auto`) for the output column.
       * You also control *when* a row should be created using **Triggers**.
 
 Alternatively, for simple excel sheets (a simple row with headers), you can skip all lookups and column definitions, and use the `simpletable` option to specify the sheet you want to extract. See more information bellow.
@@ -297,7 +297,7 @@ Defines the structure of your output CSV file. Each object in the `columns` list
 | Field       | Type    | Required | Description                                                                                                                                                                                             |
 |-------------|---------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `name`      | String  | Yes      | The header name for this column in the output CSV file.                                                                                                                                                 |
-| `type`      | String  | Yes      | Data type for the output column. Use `"string"` for text, `"number"` for numeric values (integers or decimals). Affects how data is read and potentially formatted.                                        |
+| `type`      | String  | No      | Data type for the output column. Use `"string"` for text, `"number"` for numeric values (integers or decimals). Affects how data is read and potentially formatted. Default is `"auto"`. See all available types below.                                      |
 | `value`     | String  | Yes      | How to get the value for this column. Can be: <br> - A **literal string**: `value: "Constant Value"` <br> - A **cell reference**: `value: "SheetName!A1"` or using tokens: `value: "%%SHEET%%!B%%ROW%%"` <br> - An **Excel style formula** (e.g., `=sum(sheet!B2:B20)`)|
 | `trigger`   | String  | No       | Controls if this column can trigger the creation of a new row in the CSV. Options: `"nonempty"` (default), `"never"`, `"nonzero"`. See Trigger System below.                                           |
 | `rowOffset` | Number  | No       | Optional (default 0). Adds an offset to the row number part of a cell reference in `value`. Useful for getting data from adjacent rows (e.g., `value: "Data!A%%ROW%%", rowOffset: 1` gets data from row below). |
@@ -340,6 +340,35 @@ The `trigger` property on a column definition controls *if* and *when* a new row
       * The trigger condition is met only if the cell referenced in the `value` field contains a **numeric value** that is **not equal to zero**. Blank cells or cells with text do not meet this condition.
       * Useful if you only want to include rows where a specific measurement or count is actually greater than zero.
 
+### Types and Type Detection
+
+`ExcelExtract` is designed to intelligently handle various data types commonly found in Excel files. It can automatically detect the most appropriate type for each column or allow you to specify types for precise control.
+
+**Supported Data Types:**
+
+The package can work with the following data types:
+
+* **`string`**: Textual data. This is the most general type and can represent any cell content.
+* **`integer`**: Whole numbers (e.g., `10`, `-5`, `0`).
+* **`float`** or **`number`**: Numbers with decimal points (e.g., `3.14`, `-0.001`).
+* **`boolean`**: True or false values. Common string representations like "TRUE", "FALSE", "T", "F", "1", "0" are recognized during conversion if the column is determined or specified as boolean.
+* **`date`**: Dates without time components (e.g., `2023-10-26`). `ExcelExtract` can parse various common date string formats.
+* **`datetime`**: Dates with time components (e.g., `2023-10-26 14:30:00`). Various common datetime string formats are supported.
+* **`time`**: Time values without date components (e.g., `14:30:00` or `2:30 PM`).
+* **`timedelta`**: Represents a duration or difference between two dates or times (e.g., "3 days, 4:00:00" or as a representation of Excel's numeric time values if directly present as `datetime.timedelta` objects). *Note: Automatic detection of timedelta from varied string formats is limited; specifying the type might be necessary for complex duration strings.*
+
+**Type Handling Modes:**
+
+1.  **Automatic Detection (`"auto"`)**:
+    This is the default behavior for columns where no specific type is provided by the user. `ExcelExtract` will analyze the data in each column and infer the most suitable and specific data type that can represent all values in that column. For example, if a column contains `1`, `2`, and `3`, it will be detected as `integer`. If it contains `1`, `2.5`, and `3`, it will be detected as `float`. If it contains `2023-01-01` and `2023-01-02 10:00:00`, it will be detected as `datetime`.
+
+2.  **Specified Type**:
+    You can explicitly define the desired data type for each column (e.g., by providing a schema like `"type": "number"`).
+    * When a type is specified for a column, `ExcelExtract` will attempt to **force-parse** every cell value in that column into the specified type.
+    * If a cell's value cannot be successfully parsed or converted to the specified type, its value will be set to `None` (representing an empty or unconvertible cell) in the extracted data. This ensures data consistency for the column according to your definition. For instance, if a column is specified as `integer` and a cell contains "hello", that cell's value will become `None`.
+
+This system provides a balance between convenience through automatic detection and precision through user-defined type enforcement.
+
 ### Simplified Table Extraction (`simpletable`)
 
 For scenarios where your data is organized as a straightforward rectangular table within one or more sheets, with headers clearly defined in a single row, the `simpletable` mode provides a convenient way to automatically define columns based on these headers and extract the data rows below.
@@ -373,7 +402,7 @@ When `simpletable` is used, ExcelExtract performs the following steps internally
 2.  It identifies the `headerrow` within the specified `sheet`.
 3.  It reads the cells in the `headerrow` starting from the resolved `startcolumn` to the resolved `endcolumn` (or the auto-detected `endcolumn`).
 4.  For each non-empty cell found in this header range, it uses the cell's string value as the `name` for an output CSV column.
-5.  It generates an internal column definition for each detected header, setting its `value` to reference the corresponding cell in the table data rows. The `type` for these auto-generated data columns defaults to `"string"`. The `trigger` defaults to `"nonempty"`.
+5.  It generates an internal column definition for each detected header, setting its `value` to reference the corresponding cell in the table data rows. The `type` for these auto-generated data columns defaults to `"auto"`. The `trigger` defaults to `"nonempty"`.
 6.  If `sourcefilecolumn` is specified, it adds an additional column definition *before* the detected data columns. This column uses the specified name as its header, has `"type": "string"`, its value is the internal `%%FILE_NAME%%` token, and its `trigger` is set to `"never"`.
 7.  These auto-generated column definitions are combined with any columns explicitly listed under the `columns` key in the export job.
 8.  The tool then implicitly sets up a row loop based on the resolved `startrow`, `endrow`, and `count` parameters and proceeds to extract data using the combined list of column definitions for each row in that loop.

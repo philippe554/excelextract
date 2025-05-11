@@ -133,7 +133,6 @@
             "columns": [
                 {
                     "name": "basic!%%COL%%1",
-                    "type": "auto",
                     "value": "basic!%%COL%%%%ROW%%"
                 }
             ]
