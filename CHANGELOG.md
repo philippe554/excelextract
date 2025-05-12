@@ -8,6 +8,7 @@ All notable changes to ExcelExtract will be documented in this file.
 - Add propper logging system
 - Add a mode to run without a config file, but specify the xslx as command argument
 - Allow to write the output to to the console
+- Add order field to config file (allows to order columns)
 
 ## [0.6.0] - 2025-05-11
 

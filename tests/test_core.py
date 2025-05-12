@@ -51,3 +51,9 @@ def test_1(tmp_path):
     assert output.splitlines()[4] == "\"test\",\"\",\"\",\"\",False,\"\",\"\",\"\",\"\",0.2"
     assert len(output.splitlines()) == 5
 
+    with open(tmp_path / "order.csv", "r", encoding="utf-8-sig") as f:
+        output = f.read()
+    print("Order CSV:\n" + output)
+    assert output.splitlines()[0] == "\"Name\",\"Years\",\"Hours\",\"Role\",\"Salary\",\"Currency\""
+    assert len(output.splitlines()) == 8
+

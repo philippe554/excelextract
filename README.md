@@ -474,6 +474,29 @@ To take advantage of this feature, you need to use this token in the column name
 
 This feature allows for powerful data pivoting and aggregation directly during extraction.
 
+### Order of Columns
+
+By default, ExcelExtract preserves the order as which they are defined in the config file, or for dynamic columns, in order that they are detected. 
+
+However, if you need a specific order, you can add the `order` keyword to the configuration file. For example:
+
+```json
+{
+    "simpleTable": {
+        "sheet": "sheet"
+    },
+    "order" : [
+        "Name",
+        "Role",
+        "Salary"
+    ]
+}
+```
+
+The output csv will have the columns in order as specified by this list. All columns which are not specified by this list are added to the end of this list, in their original order.
+
+Note: there is no token evaluation in this list. To order dynamic columns, you have to specify the exact names.
+
 ## Key Features Summary
 
   * Simple extractions directly using the command line, no config file required

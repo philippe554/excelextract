@@ -81,6 +81,12 @@ def loopFiles(exportConfig):
         out = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', newline='')
  
     colNames = allTypes.keys()
+
+    if "order" in exportConfig:
+        order = exportConfig["order"]
+        if not isinstance(order, list):
+            raise ValueError(f"Invalid order: {order}")
+        colNames = [col for col in order if col in allTypes] + [col for col in allTypes if col not in order]
     
     for colName in colNames:
         if allTypes[colName] == "auto":

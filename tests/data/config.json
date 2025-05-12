@@ -148,6 +148,15 @@
             "simpleTable": {
                 "sheet": "types"
             }
+        },
+        {
+            "output": "order.csv",
+            "simpleTable": {
+                "sheet": "basic"
+            },
+            "order" : [
+                "Name","Years","Hours","Role","Salary"
+            ]
         }
     ]
 }
