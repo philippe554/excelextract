@@ -1,16 +1,7 @@
 
 # ExcelExtract
 
-**ExcelExtract** is a straightforward command-line tool designed to help you pull structured data out of Excel spreadsheets automatically. You tell it where your data is and what you want using a simple configuration file (written in JSON), and it generates clean CSV files ready for analysis.
-
-It’s particularly helpful for researchers, data collectors, or anyone working with standardized forms, surveys, or logs stored in Excel files.
-
-## What It Does
-
-* Reads data from Excel (.xlsx) files specified by path patterns (including wildcards like `*` and `**`).
-* Lets you automatically repeat extraction steps across different sheets, rows, or columns based on your setup.
-* Uses a JSON configuration file where you define *exactly* where to find the data and how it should be structured.
-* Outputs the extracted data into clean, easy-to-use CSV files.
+**ExcelExtract** is a command-line tool designed to help pull data out of Excel spreadsheets (XLSX files). Either fully automatically, or extract specific cells or lists with the use of a configuration file (in JSON).
 
 ## Installation
 
@@ -20,7 +11,44 @@ You can install ExcelExtract using `pip`, Python's package installer. Open your 
 pip install excelextract
 ```
 
-**Note:** You need Python 3.9 or higher installed on your system to use this tool. This documentation assumes you have Python and `pip` available.
+**Note:** You need `Python 3.9` or higher installed on your system to use this tool. This documentation assumes you have `Python` and `pip` available.
+
+## Quick Start
+
+**Command Line Mode**
+
+For simple configurations (each sheet contains 1 table, simple column structure), you can run ExcelExtract directly from the command line without making any config files:
+
+```bash
+excelextract surveys/*.xlsx --sheet sheet1 --output output.csv
+```
+
+If no output is specified in this mode, the output is printed to the console, and can be piped:
+
+```bash
+excelextract surveys/*.xlsx --sheet sheet1 > output.csv
+```
+
+Both examples merge (vertically stack) all xlsx files in the surveys folder, taking only `sheet1`.
+
+The command line mode uses the automatic detection of columns and types, see the `default mode` below for more complex scenarios.
+
+**Default Mode using a Configuration File**
+
+ExcelExtract is designed to extract complex data from Excel files, even when it's spread across multiple files, various sheets, or doesn't adhere to a traditional header-column layout. It allows you to precisely define how to extract data from any cell, loop over ranges, and consolidate information from multiple sheets into a single CSV output.
+
+The core of ExcelExtract's operation is a JSON configuration file, where you specify:
+
+* **Input Sources:** Which Excel (.xlsx) files to read, using path patterns with wildcards (e.g., `*`, `**`).
+* **Data Mapping:** Exact locations and structures of data within the Excel files, including dynamic row/column ranges for lists based on lookup values.
+* **Extraction Automation:** Rules for automatically repeating extraction processes across different sheets, rows, or columns.
+* **Output Formatting:** How to generate clean, type-detected CSV files from the extracted data.
+
+A comprehensive guide on defining this configuration file can be found in the documentation below. Once your `config.json` is ready, simply run:
+
+```bash
+excelextract config.json
+```
 
 ## How It Works: The Configuration File
 
@@ -448,6 +476,7 @@ This feature allows for powerful data pivoting and aggregation directly during e
 
 ## Key Features Summary
 
+  * Simple extractions directly using the command line, no config file required
   * Extracts data based on a clear JSON configuration, separating settings from the tool itself.
   * Selects input files using intuitive path strings with glob pattern support (`*`, `**`, `?`), accepting a single path or a list of paths.
   * Uses **Tokens** (like `%%ROW%%`, `%%SURVEY_SHEET%%`) as placeholders for dynamic values like row numbers or sheet names found during processing.
@@ -461,7 +490,7 @@ This feature allows for powerful data pivoting and aggregation directly during e
 
 ## License
 
-MIT License © 2025 Philippe
+MIT License
 
 > This project is not affiliated with or endorsed by Microsoft. "Excel" is a registered trademark of Microsoft Corporation. This tool uses the .xlsx format purely as a data source.
 
