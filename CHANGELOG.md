@@ -4,6 +4,11 @@ All notable changes to ExcelExtract will be documented in this file.
 
 ## [Unreleased]
 
+- Make exports field optional in the config file
+- Add propper logging system
+- Add a mode to run without a config file, but specify the xslx as command argument
+- Allow to write the output to to the console
+
 ## [0.6.0] - 2025-05-11
 
 - Add automatic type detection

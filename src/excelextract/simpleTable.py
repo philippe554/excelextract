@@ -71,9 +71,7 @@ def resolveSimpleTable(config):
                 "type": "auto",
                 "value": sheet + "!%%__SIMPLETABLE_COL%%%%__SIMPLETABLE_ROW%%"
             })
-        
-        print(config)
-        
+                
         return config
     
     except Exception as e:

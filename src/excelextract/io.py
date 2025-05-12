@@ -3,9 +3,11 @@ import os
 import csv
 import glob
 import warnings
+import sys
 
 from openpyxl import load_workbook
 
+from .logger import logger
 from .extract import extract
 from .type import detectTypeOfList, convertRowToType
 
@@ -47,7 +49,7 @@ def loopFiles(exportConfig):
         
         rows, types = extract(exportConfig, wb, inputFileName)
 
-        print(f"Processing {inputFile} with {len(rows)} rows extracted.")
+        logger.info(f"Processing {inputFile} with {len(rows)} rows extracted.")
 
         allRows.extend(rows)
 
@@ -61,31 +63,34 @@ def loopFiles(exportConfig):
     if len(allRows) == 0:
         raise ValueError("No rows extracted from the input files")
     
-    if "output" not in exportConfig:
-        raise ValueError("Missing 'output' in exportConfig")
+    if "output" in exportConfig:    
+        outputFile = exportConfig["output"]
+
+        if not str(outputFile).endswith(".csv"):
+            outputFile += ".csv"
+
+        outputDir = os.path.dirname(outputFile)
+        if outputDir != "" and not os.path.exists(outputDir):
+            os.makedirs(outputDir)
+
+        out = open(outputFile, "w", newline="", encoding="utf-8-sig")
+    else:
+        out = sys.stdout
+ 
+    colNames = allTypes.keys()
     
-    outputFile = exportConfig["output"]
+    for colName in colNames:
+        if allTypes[colName] == "auto":
+            data = [d[colName] for d in allRows if colName in d]
+            allTypes[colName] = detectTypeOfList(data)
+    
+    writer = csv.DictWriter(out, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+    writer.writeheader()
+    for row in allRows:
+        rowConverted = convertRowToType(row, allTypes)
+        writer.writerow(rowConverted)
 
-    if not str(outputFile).endswith(".csv"):
-        outputFile += ".csv"
-
-    outputDir = os.path.dirname(outputFile)
-    if outputDir != "" and not os.path.exists(outputDir):
-        os.makedirs(outputDir)
-
-    with open(outputFile, "w", newline="", encoding="utf-8-sig") as csvfile:       
-        colNames = allTypes.keys()
-        
-        for colName in colNames:
-            if allTypes[colName] == "auto":
-                data = [d[colName] for d in allRows if colName in d]
-                allTypes[colName] = detectTypeOfList(data)
-        
-        writer = csv.DictWriter(csvfile, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-        writer.writeheader()
-        for row in allRows:
-            rowConverted = convertRowToType(row, allTypes)
-            writer.writerow(rowConverted)
-
-    print(f"Wrote {len(allRows)} rows to {outputFile}")
+    if out != sys.stdout:
+        out.close()
+        logger.info(f"Wrote {len(allRows)} rows to {outputFile}.")
         
