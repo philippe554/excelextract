@@ -4,6 +4,7 @@ import csv
 import glob
 import warnings
 import sys
+import io
 
 from openpyxl import load_workbook
 
@@ -63,7 +64,8 @@ def loopFiles(exportConfig):
     if len(allRows) == 0:
         raise ValueError("No rows extracted from the input files")
     
-    if "output" in exportConfig:    
+    if "output" in exportConfig:
+        mode = "file"
         outputFile = exportConfig["output"]
 
         if not str(outputFile).endswith(".csv"):
@@ -75,7 +77,8 @@ def loopFiles(exportConfig):
 
         out = open(outputFile, "w", newline="", encoding="utf-8-sig")
     else:
-        out = sys.stdout
+        mode = "stdout"
+        out = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', newline='')
  
     colNames = allTypes.keys()
     
@@ -90,7 +93,9 @@ def loopFiles(exportConfig):
         rowConverted = convertRowToType(row, allTypes)
         writer.writerow(rowConverted)
 
-    if out != sys.stdout:
+    if mode == "file":
         out.close()
         logger.info(f"Wrote {len(allRows)} rows to {outputFile}.")
+    else:
+        out.flush()
         
