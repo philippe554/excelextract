@@ -102,11 +102,11 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             indices = [i for i, s in enumerate(data) if s in match]
 
             if len(indices) == 0:
-                raise ValueError(f"No matches found for '{match}' in '{sheet}' of '{currentElement["FILE_NAME"]}' ({searchSlice})")
+                raise ValueError(f"No matches found for '{match}' in '{sheet}' of '{currentElement['FILE_NAME']}' ({searchSlice})")
 
             if "unique" in loopDefinition and loopDefinition["unique"]:
                 if len(indices) > 1:
-                    raise ValueError(f"Multiple matches found for '{match}' in '{sheet}' of '{currentElement["FILE_NAME"]}' ({searchSlice})")
+                    raise ValueError(f"Multiple matches found for '{match}' in '{sheet}' of '{currentElement['FILE_NAME']}' ({searchSlice})")
 
             if "select" not in loopDefinition or loopDefinition["select"] == "first":
                 indices = [indices[0]]
