@@ -1,6 +1,6 @@
 [project]
 name = "excelextract"
-version = "0.6.0"
+version = "1.0.0"
 description = "A simple and flexible Excel-to-CSV extraction tool using JSON configuration."
 readme = "README.md"
 license = "MIT"
@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: End Users/Desktop",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",

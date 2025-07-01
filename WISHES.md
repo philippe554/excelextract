@@ -6,6 +6,5 @@ This file contains some wishes, not all wishes are fully considered, and might b
 - Check if all raised value errors are fully self explanatory
 - More data checking (e.g., cell should be equal to, should be in range)
 - Basic cleaning (e.g., trimming, rounding)
-- Output to xlsx
 - Add a streaming version which is not memory limited
 

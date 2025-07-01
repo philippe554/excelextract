@@ -2,7 +2,7 @@
 
 All notable changes to ExcelExtract will be documented in this file.  
 
-## [Unreleased]
+## [1.0.0] - 2025-07-01
 
 - Make exports field optional in the config file
 - Add propper logging system
@@ -10,7 +10,7 @@ All notable changes to ExcelExtract will be documented in this file.
 - Allow to write the output to to the console
 - Add order field to config file (allows to order columns)
 - Add export to xlsx (to export both in json mode: "output": "file.csv|xlsx")
-- File tokens
+- Add file tokens
 
 ## [0.6.0] - 2025-05-11
 
