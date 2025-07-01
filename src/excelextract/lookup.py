@@ -39,12 +39,40 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
                 raise ValueError(f"Missing 'token' in loop definition: {loopDefinition}")
         
         loopElements = []
-        
+       
         if operation == "loopsheets":
-            if "regex" not in loopDefinition:
-                raise ValueError(f"Missing 'regex' in loop definition: {loopDefinition}")
-            sheetRegex = loopDefinition["regex"]
-            matchingSheets = [sheet.title for sheet in wb.worksheets if re.search(sheetRegex, sheet.title)]
+            if "match" in loopDefinition:
+                match = loopDefinition["match"]
+                if not isinstance(match, list):
+                    match = [match]
+                matchingSheets = [sheet.title for sheet in wb.worksheets if sheet.title in match]
+                errorStr = f"match '{match}'"
+            elif "regex" in loopDefinition:
+                sheetRegex = loopDefinition["regex"]
+                matchingSheets = [sheet.title for sheet in wb.worksheets if re.search(sheetRegex, sheet.title)]
+                errorStr = f"regex '{sheetRegex}'"
+            else:
+                raise ValueError(f"Missing 'match' or 'regex' in loop definition: {loopDefinition}")
+            
+            if len(matchingSheets) == 0:
+                raise ValueError(f"No sheets matching {errorStr} in workbook: {loopDefinition}")
+
+            if "unique" in loopDefinition and loopDefinition["unique"]:
+                if len(matchingSheets) > 1:
+                    raise ValueError(f"Multiple sheets matching {errorStr} in workbook: {loopDefinition}")
+                
+            if "select" in loopDefinition:
+                if loopDefinition["select"] == "first":
+                    matchingSheets = [matchingSheets[0]]
+                elif loopDefinition["select"] == "last":
+                    matchingSheets = [matchingSheets[-1]]
+                elif loopDefinition["select"] == "all":
+                    pass
+                elif type(loopDefinition["select"]) == int:
+                    matchingSheets = [matchingSheets[loopDefinition["select"]]]
+                else:
+                    raise ValueError(f"Invalid select '{loopDefinition['select']}' in definition: {loopDefinition}")
+
             loopElements = matchingSheets
 
         elif operation == "findrow" or operation == "findcolumn":
@@ -58,6 +86,8 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             if "sheet" not in loopDefinition:
                 raise ValueError(f"Missing 'sheet' in loop definition: {loopDefinition}")
             sheet = applyTokenReplacement(loopDefinition["sheet"], currentElement)
+            if sheet not in wb.sheetnames:
+                raise ValueError(f"Sheet '{sheet}' not found in workbook: {loopDefinition}")
 
             if operation == "findrow":
                 if "column" not in loopDefinition:
@@ -72,11 +102,11 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             indices = [i for i, s in enumerate(data) if s in match]
 
             if len(indices) == 0:
-                raise ValueError(f"No matches found for '{match}' in sheet '{sheet}' and search slice '{searchSlice}'")
+                raise ValueError(f"No matches found for '{match}' in '{sheet}' of '{currentElement["FILE_NAME"]}' ({searchSlice})")
 
             if "unique" in loopDefinition and loopDefinition["unique"]:
                 if len(indices) > 1:
-                    raise ValueError(f"Multiple matches found for '{match}' in sheet '{sheet}' and search slice '{searchSlice}'")
+                    raise ValueError(f"Multiple matches found for '{match}' in '{sheet}' of '{currentElement["FILE_NAME"]}' ({searchSlice})")
 
             if "select" not in loopDefinition or loopDefinition["select"] == "first":
                 indices = [indices[0]]

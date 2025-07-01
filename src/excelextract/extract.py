@@ -1,4 +1,7 @@
 
+import os
+import fnmatch 
+
 from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.utils.cell import coordinate_from_string
 
@@ -51,8 +54,11 @@ def getColValue(wb, colDict, colName, tokens, cache, recursionDepth = 0):
         for cacheColName in cache:
             if "%%" + cacheColName + "%%" in replacedValue:
                 cacheColValue = cache[cacheColName]
-                if cacheColValue is None:
-                    cacheColValue = 0
+                if cacheColName in colDict:
+                    otherType = colDict[cacheColName].get("type", "auto").lower()
+                    if otherType in ["number", "int", "float"]:
+                        if cacheColValue is None or type(cacheColValue) not in [int, float]:
+                            cacheColValue = 0
                 replacedValue = replacedValue.replace("%%" + cacheColName + "%%", str(cacheColValue) if cacheColValue is not None else "")
 
     # If not in the cache, let's see if we can calculate it.
@@ -65,9 +71,9 @@ def getColValue(wb, colDict, colName, tokens, cache, recursionDepth = 0):
             if "%%" + otherColName + "%%" in replacedValue:
                 otherColValue = getColValue(wb, colDict, otherColName, tokens, cache, recursionDepth + 1)
 
-                otherType = colDict[otherColName].get("type", "string").lower()
-                if otherType == "number":
-                    if otherColValue is None:
+                otherType = colDict[otherColName].get("type", "auto").lower()
+                if otherType in ["number", "int", "float"]:
+                    if otherColValue is None or type(cacheColValue) not in [int, float]:
                         otherColValue = 0
 
                 replacedValue = replacedValue.replace("%%" + otherColName + "%%", str(otherColValue) if otherColValue is not None else "")
@@ -120,6 +126,33 @@ def checkForTrigger(colSpec, cellVal, colName):
         
     raise RuntimeError(f"Unreachable code: trigger: {trigger}, colName: {colName}, cellVal: {cellVal}, type: {type(cellVal)}")
 
+def getFileTokens(exportConfig, filename):
+    tokens = {
+        "FILE_NAME": os.path.basename(filename)
+    }
+
+    if "filetokens" in exportConfig:
+        for fileToken in exportConfig["filetokens"]:
+            if "token" not in fileToken:
+                raise ValueError("File token must have a 'token' key.")
+            tokenName = fileToken["token"]
+
+            if "default" in fileToken:
+                tokens[tokenName] = fileToken["default"]
+            else:
+                tokens[tokenName] = None
+
+            if "match" in fileToken:
+                for matchPattern, matchValue in fileToken["match"].items():
+                    if fnmatch.fnmatch(filename, matchPattern):
+                        tokens[tokenName] = matchValue
+                        break
+                    
+            if tokens[tokenName] is None:
+                raise ValueError(f"File token '{tokenName}' must have a 'default' value or a matching pattern.")
+
+    return tokens
+
 def extract(exportConfig, wb, filename):
     allRows = []
     types = {}
@@ -127,7 +160,7 @@ def extract(exportConfig, wb, filename):
     if "columns" not in exportConfig:
         raise ValueError("Missing 'columns' in exportConfig")
     
-    staticTokens =  {"FILE_NAME": filename}
+    staticTokens = getFileTokens(exportConfig, filename)
 
     # Split the exportConfig into lookups and intra-row lookups.
     lookups = []

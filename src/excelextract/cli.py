@@ -8,7 +8,7 @@ import glob
 import importlib.metadata
 import logging
 
-from .logger import logger
+from .logger import logger, addFileHandler
 from .utils import cleanConfig
 from .simpleTable import resolveSimpleTable
 from .io import loopFiles
@@ -38,6 +38,7 @@ def main():
         parser.add_argument("-o", "--output", type=Path, help="Output folder, prefix for output files in the config, or output file name if not using a config file.")
         parser.add_argument("-s", "--sheet", type=str, help="Sheet name to process, when not using a config file.")
         parser.add_argument("-v", "--verbose", type=int, help="Set verbosity level (0-2).", choices=[0, 1, 2])
+        parser.add_argument("--log", type=str, help="Log file path.")
 
         args = parser.parse_args()
 
@@ -49,6 +50,9 @@ def main():
             logger.setLevel(logging.DEBUG)
         else: # None
             logger.setLevel(logging.INFO)
+
+        if args.log:
+            addFileHandler(args.log)
 
         files = glob.glob(args.path, recursive=True)
 

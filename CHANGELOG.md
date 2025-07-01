@@ -6,9 +6,11 @@ All notable changes to ExcelExtract will be documented in this file.
 
 - Make exports field optional in the config file
 - Add propper logging system
-- Add a mode to run without a config file, but specify the xslx as command argument
+- Add a mode to run without a config file, but specify the xlsx as command argument
 - Allow to write the output to to the console
 - Add order field to config file (allows to order columns)
+- Add export to xlsx (to export both in json mode: "output": "file.csv|xlsx")
+- File tokens
 
 ## [0.6.0] - 2025-05-11
 

@@ -32,3 +32,9 @@ if logger.handlers:
         logger.removeHandler(handler)
 
 logger.addHandler(handler)
+
+def addFileHandler(logfile):
+    file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler = logging.FileHandler(logfile, mode='w', encoding='utf-8')
+    file_handler.setFormatter(file_formatter)
+    logger.addHandler(file_handler)

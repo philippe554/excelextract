@@ -497,6 +497,25 @@ The output csv will have the columns in order as specified by this list. All col
 
 Note: there is no token evaluation in this list. To order dynamic columns, you have to specify the exact names.
 
+### File Tokens
+
+TODO: Write documention
+
+Quick example syntax:
+
+```json
+"fileTokens": [
+  {
+    "token": "EXCHANGE_RATE",
+    "default": "1.0",
+    "match": {
+      "data/Hungary/*.xlsx": "0.0025",
+      "data/Poland/*.xlsx": "0.22"
+    }
+  }
+],
+```
+
 ## Key Features Summary
 
   * Simple extractions directly using the command line, no config file required

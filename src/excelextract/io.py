@@ -7,6 +7,7 @@ import sys
 import io
 
 from openpyxl import load_workbook
+from openpyxl import Workbook
 
 from .logger import logger
 from .extract import extract
@@ -48,7 +49,7 @@ def loopFiles(exportConfig):
         except Exception as e:
             raise ValueError(f"Error opening file {inputFile}: {e}")
         
-        rows, types = extract(exportConfig, wb, inputFileName)
+        rows, types = extract(exportConfig, wb, inputFile)
 
         logger.info(f"Processing {inputFile} with {len(rows)} rows extracted.")
 
@@ -63,22 +64,6 @@ def loopFiles(exportConfig):
 
     if len(allRows) == 0:
         raise ValueError("No rows extracted from the input files")
-    
-    if "output" in exportConfig:
-        mode = "file"
-        outputFile = exportConfig["output"]
-
-        if not str(outputFile).endswith(".csv"):
-            outputFile += ".csv"
-
-        outputDir = os.path.dirname(outputFile)
-        if outputDir != "" and not os.path.exists(outputDir):
-            os.makedirs(outputDir)
-
-        out = open(outputFile, "w", newline="", encoding="utf-8-sig")
-    else:
-        mode = "stdout"
-        out = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', newline='')
  
     colNames = allTypes.keys()
 
@@ -92,16 +77,68 @@ def loopFiles(exportConfig):
         if allTypes[colName] == "auto":
             data = [d[colName] for d in allRows if colName in d]
             allTypes[colName] = detectTypeOfList(data)
-    
-    writer = csv.DictWriter(out, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-    writer.writeheader()
-    for row in allRows:
-        rowConverted = convertRowToType(row, allTypes)
-        writer.writerow(rowConverted)
 
-    if mode == "file":
-        out.close()
-        logger.info(f"Wrote {len(allRows)} rows to {outputFile}.")
+    out = None
+    csvFileName = None
+    xlsxFileName = None
+
+    if "output" in exportConfig:
+        outputFile = exportConfig["output"]
+
+        basename = os.path.basename(outputFile)
+        if "|" in basename and "." in basename:
+            extensionGroup = outputFile.split(".")[-1]
+            if "csv" in extensionGroup.lower():
+                csvFileName = outputFile.split(".")[0] + ".csv"
+            if "xlsx" in extensionGroup.lower():
+                xlsxFileName = outputFile.split(".")[0] + ".xlsx"
+        else:
+            if str(outputFile).endswith(".csv"):
+                csvFileName = outputFile
+            elif str(outputFile).endswith(".xlsx"):
+                xlsxFileName = outputFile
+            else:
+                csvFileName = outputFile + ".csv"
+
+        outputDir = os.path.dirname(outputFile)
+        if outputDir != "" and not os.path.exists(outputDir):
+            os.makedirs(outputDir)
+
+        if csvFileName:
+            out = open(csvFileName, "w", newline="", encoding="utf-8-sig")
+            writer = csv.DictWriter(out, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            writer.writeheader()
+            for row in allRows:
+                rowConverted = convertRowToType(row, allTypes)
+                writer.writerow(rowConverted)
+            out.close()
+            logger.info(f"Wrote {len(allRows)} rows to {csvFileName}.")
+        
+        if xlsxFileName:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = basename.split(".")[0] if "." in basename else basename
+            ws.append(list(colNames))
+
+            for row in allRows:
+                rowConverted = convertRowToType(row, allTypes)
+                ws.append([rowConverted[col] for col in colNames])
+
+            wb.save(xlsxFileName)
+            logger.info(f"Wrote {len(allRows)} rows to {xlsxFileName}.")
+
+        if not csvFileName and not xlsxFileName:
+            raise ValueError("Output file must have a .csv or .xlsx extension.")
+        
     else:
+        out = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', newline='')
+        writer = csv.DictWriter(out, fieldnames = colNames, delimiter=",", quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        writer.writeheader()
+        for row in allRows:
+            rowConverted = convertRowToType(row, allTypes)
+            writer.writerow(rowConverted)
         out.flush()
+     
+
+    
         
