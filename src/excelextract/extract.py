@@ -11,7 +11,7 @@ from .formulas import evaluate
 
 def dereferenceCell(wb, cellRef, colSpec = None):
     if cellRef.strip().startswith("="):
-        return evaluate(wb, cellRef)                
+        return evaluate(wb, cellRef)       
         
     else:
         # If the replaced value contains "!", treat it as a cell reference in the format "SheetName!CellRef".
@@ -56,9 +56,21 @@ def getColValue(wb, colDict, colName, tokens, cache, recursionDepth = 0):
                 cacheColValue = cache[cacheColName]
                 if cacheColName in colDict:
                     otherType = colDict[cacheColName].get("type", "auto").lower()
-                    if otherType in ["number", "int", "float"]:
-                        if cacheColValue is None or type(cacheColValue) not in [int, float]:
+                    if otherType in ["number", "integer", "float"]:
+                        if cacheColValue is None:
                             cacheColValue = 0
+                        elif otherType == "integer":
+                            if type(cacheColValue) not in [int, float]:
+                                try:
+                                    cacheColValue = int(cacheColValue)
+                                except Exception:
+                                    cacheColValue = 0
+                        else:
+                            if type(cacheColValue) not in [int, float]:
+                                try:
+                                    cacheColValue = float(cacheColValue)
+                                except Exception:
+                                    cacheColValue = 0
                 replacedValue = replacedValue.replace("%%" + cacheColName + "%%", str(cacheColValue) if cacheColValue is not None else "")
 
     # If not in the cache, let's see if we can calculate it.
@@ -72,7 +84,7 @@ def getColValue(wb, colDict, colName, tokens, cache, recursionDepth = 0):
                 otherColValue = getColValue(wb, colDict, otherColName, tokens, cache, recursionDepth + 1)
 
                 otherType = colDict[otherColName].get("type", "auto").lower()
-                if otherType in ["number", "int", "float"]:
+                if otherType in ["number", "integer", "float"]:
                     if otherColValue is None or type(cacheColValue) not in [int, float]:
                         otherColValue = 0
 

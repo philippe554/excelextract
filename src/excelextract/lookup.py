@@ -79,9 +79,9 @@ def resolveLookups(wb, elements = [], unprocessedDefinitions = [], currentElemen
             if "match" not in loopDefinition:
                 raise ValueError(f"Missing 'match' in loop definition: {loopDefinition}")
             match = loopDefinition["match"]
-
             if not isinstance(match, list):
                 match = [match]
+            match = [applyTokenReplacement(m, currentElement) for m in match]
 
             if "sheet" not in loopDefinition:
                 raise ValueError(f"Missing 'sheet' in loop definition: {loopDefinition}")

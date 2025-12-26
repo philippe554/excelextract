@@ -46,11 +46,13 @@ def evaluate(wb, formula):
 
             if ":" in cellRef:
                 rangeElementRef = rows_from_range(cellRef)
-                data = []
+                rangeData = []
                 for rangeElement in rangeElementRef:
-                    value = getCellValue(wb, refSheetName + "!" + rangeElement[0])
-                    data.append(value)
-                inputs.append(data)
+                    rowData = []
+                    for cell in rangeElement:
+                        rowData.append(getCellValue(wb, refSheetName + "!" + cell))
+                    rangeData.append(rowData)
+                inputs.append(rangeData)
             else:
                 inputs.append(getCellValue(wb, refSheetName + "!" + cellRef))
 
